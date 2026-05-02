@@ -98,7 +98,7 @@ const INITIAL_PRIORITY = [
   { roleId: 'R', actor: '손승연' },
 ];
 
-const SHOWS = [
+const FALLBACK_SHOWS = [
   { id: 's1',  d: '5/1',  dow: '목', t: '19:30' },
   { id: 's2',  d: '5/2',  dow: '금', t: '14:00' },
   { id: 's3',  d: '5/2',  dow: '금', t: '19:30' },
@@ -114,7 +114,7 @@ const SHOWS = [
 ];
 
 // Per-actor availability — list of show ids they can do
-const AVAIL = {
+const FALLBACK_AVAIL = {
   '정선아': ['s1','s2','s5','s7','s10','s12'],
   '김선영': ['s2','s3','s8','s9','s11'],
   '박혜나': ['s4','s6','s7','s11'],
@@ -128,7 +128,7 @@ const AVAIL = {
 };
 
 // ---------- Derived ----------
-function buildCombos(priority) {
+function buildCombos(priority, shows, avail) {
   // group by role
   const byRole = {L:[], R:[], M:[], T:[]};
   priority.forEach((p, idx) => {
@@ -145,8 +145,8 @@ function buildCombos(priority) {
     const cast = [l, r, m, t];
     const score = cast.reduce((s, c) => s + points[c.actor], 0);
     // available shows = intersection
-    const slotIds = SHOWS
-      .filter(s => cast.every(c => AVAIL[c.actor].includes(s.id)))
+    const slotIds = shows
+      .filter(s => cast.every(c => (avail[c.actor] || []).includes(s.id)))
       .map(s => s.id);
     combos.push({
       id: cast.map(c => c.actor).join('|'),
@@ -160,6 +160,24 @@ function buildCombos(priority) {
   return { combos, points };
 }
 
+
+function parseKoreanDateLabel(label, now = new Date()) {
+  const m = label.match(/(\d+)월\s*(\d+)일/);
+  if (!m) return null;
+  const [, month, day] = m.map(Number);
+  return new Date(now.getFullYear(), month - 1, day, 0, 0, 0, 0);
+}
+function parseShowDateTime(show, now = new Date()) {
+  const d = parseKoreanDateLabel(show.rawDate || show.d, now);
+  if (!d) return null;
+  const [hh = 0, mm = 0] = (show.t || '00:00').split(':').map(Number);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh, mm, 0, 0);
+}
+function toShortDate(label) {
+  const d = parseKoreanDateLabel(label);
+  if (!d) return label;
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
 // ---------- UI atoms ----------
 function RoleDot({roleId, size=8}) {
   const r = ROLE[roleId];
@@ -322,7 +340,7 @@ function ComboRow({combo, selected, onSelect, focusShowId}) {
 }
 
 // ---------- Heatmap ----------
-function Heatmap({combos, selectedId, focusShowId, setFocusShowId, setSelectedId}) {
+function Heatmap({combos, shows, selectedId, focusShowId, setFocusShowId, setSelectedId}) {
   const COL_W = 60;
   const ROW_H = 32;
   const LABEL_W = 280;
@@ -330,17 +348,17 @@ function Heatmap({combos, selectedId, focusShowId, setFocusShowId, setSelectedId
 
   return (
     <div style={{overflowX:'auto'}}>
-      <div style={{minWidth: LABEL_W + SCORE_W + COL_W * SHOWS.length + 24}}>
+      <div style={{minWidth: LABEL_W + SCORE_W + COL_W * shows.length + 24}}>
         {/* Column headers */}
         <div style={{
           display:'grid',
-          gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${SHOWS.length}, ${COL_W}px)`,
+          gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${shows.length}, ${COL_W}px)`,
           gap: 0, marginBottom: 6, alignItems:'end',
           paddingBottom: 8, borderBottom: '1px solid var(--line)',
         }}>
           <div style={{fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, paddingLeft: 4}}>조합</div>
-          <div style={{fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, textAlign: 'right', paddingRight: 8}}>점수</div>
-          {SHOWS.map(s => {
+          <div style={{fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, textAlign: 'right', paddingRight: 8}}>선호도</div>
+          {shows.map(s => {
             const isFocus = focusShowId === s.id;
             return (
               <button
@@ -370,7 +388,7 @@ function Heatmap({combos, selectedId, focusShowId, setFocusShowId, setSelectedId
               onClick={() => setSelectedId(c.id)}
               style={{
                 display:'grid',
-                gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${SHOWS.length}, ${COL_W}px)`,
+                gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${shows.length}, ${COL_W}px)`,
                 alignItems:'center',
                 height: ROW_H,
                 background: isSel ? 'var(--accent-softer)' : 'transparent',
@@ -398,7 +416,7 @@ function Heatmap({combos, selectedId, focusShowId, setFocusShowId, setSelectedId
                 </span>
               </div>
               <div className="mono tnum" style={{fontSize: 13, fontWeight: 600, textAlign: 'right', paddingRight: 8}}>{c.score}</div>
-              {SHOWS.map(s => {
+              {shows.map(s => {
                 const has = c.slots.includes(s.id);
                 const isCellFocus = focusShowId === s.id;
                 let bg = 'transparent';
@@ -428,9 +446,9 @@ function Heatmap({combos, selectedId, focusShowId, setFocusShowId, setSelectedId
 }
 
 // ---------- Selection detail bar ----------
-function DetailBar({combo, focusShowId}) {
+function DetailBar({combo, shows, focusShowId}) {
   if (!combo) return null;
-  const slots = combo.slots.map(id => SHOWS.find(s => s.id === id));
+  const slots = combo.slots.map(id => shows.find(s => s.id === id));
   return (
     <div className="surface" style={{
       padding: '14px 18px',
@@ -460,7 +478,7 @@ function DetailBar({combo, focusShowId}) {
         </div>
       </div>
       <div style={{textAlign:'right'}}>
-        <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>점수</div>
+        <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>선호도</div>
         <div className="mono tnum" style={{fontSize: 28, fontWeight: 600, color:'var(--accent)', lineHeight: 1}}>{combo.score}</div>
       </div>
     </div>
@@ -513,7 +531,7 @@ function Header({comboCount, showCount, sort, setSort}) {
           <div style={{fontSize: 18, fontWeight: 600, letterSpacing: -0.2}}>배우 스케줄링</div>
         </div>
         <div style={{fontSize: 12, color:'var(--ink-3)'}}>
-          우선순위로 조합 점수를 매기고, 시간 순으로 회차를 탐색
+          우선순위로 조합 선호도를 매기고, 시간 순으로 회차를 탐색
         </div>
       </div>
       <div style={{display:'flex', gap: 16, alignItems:'center', fontSize: 12}}>
@@ -525,7 +543,7 @@ function Header({comboCount, showCount, sort, setSort}) {
           <span style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5}}>정렬</span>
           <div style={{display:'flex', gap: 2, padding: 2, background:'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 6}}>
             {[
-              {k:'score',    l:'점수↓',   tip:'점수 높은 순'},
+              {k:'score',    l:'선호도↓',   tip:'선호도 높은 순'},
               {k:'slotsDesc',l:'회차↓',   tip:'가능 회차 많은 순'},
               {k:'rare',     l:'희소성',  tip:'가능 회차 적은 순 (놓치기 쉬움)'},
               {k:'earliest', l:'가까운순', tip:'가장 빠른 회차 기준'},
@@ -593,14 +611,59 @@ function RoleLegend() {
 // ---------- App ----------
 function App() {
   const [priority, setPriority] = useState(INITIAL_PRIORITY);
+  const [shows, setShows] = useState(FALLBACK_SHOWS);
+  const [avail, setAvail] = useState(FALLBACK_AVAIL);
   const [filters, setFilters] = useState({weekendOnly:false, matineeOnly:false, hideSeen:false, excludeSon:false});
   const [sort, setSort] = useState('score');
   const [selectedId, setSelectedId] = useState(null);
   const [focusShowId, setFocusShowId] = useState('s5'); // 5/3 일 19:00
 
-  const { combos, points } = useMemo(() => buildCombos(priority), [priority]);
+  useEffect(() => {
+    const loadCsv = async () => {
+      try {
+        const res = await fetch('./2026%EC%83%81%EB%B0%98%EA%B8%B0%EA%B3%B5%EC%97%B0%EC%9D%BC%EC%A0%95%20-%20%EB%A0%98%ED%94%BC%EC%B9%B4.csv');
+        const txt = await res.text();
+        const rows = txt.trim().split('\n').map(line => line.split(','));
+        const header = rows[0] || [];
+        const idx = {
+          date: header.indexOf('날짜'),
+          dow: header.indexOf('요일'),
+          time: header.indexOf('시간'),
+          L: header.indexOf('렘피카'),
+          R: header.indexOf('라파엘라'),
+          M: header.indexOf('마리네티'),
+          T: header.indexOf('타데우스'),
+        };
+        const dataRows = rows.slice(1).filter(r => r.length >= 7);
+        const nextShows = dataRows.map((r, i) => ({
+          id: `c${i+1}`,
+          rawDate: r[idx.date],
+          d: toShortDate(r[idx.date]),
+          dow: r[idx.dow],
+          t: r[idx.time],
+        }));
+        const nextAvail = {};
+        dataRows.forEach((r, i) => {
+          const sid = `c${i+1}`;
+          ['L','R','M','T'].forEach(key => {
+            const actor = r[idx[key]];
+            if (!actor) return;
+            if (!nextAvail[actor]) nextAvail[actor] = [];
+            nextAvail[actor].push(sid);
+          });
+        });
+        setShows(nextShows);
+        setAvail(nextAvail);
+      } catch (e) {
+        console.warn('CSV load failed. Using fallback data.', e);
+      }
+    };
+    loadCsv();
+  }, []);
 
-  // Apply filters (just visual mock for excludeSon — others would touch SHOWS)
+  const { combos, points } = useMemo(() => buildCombos(priority, shows, avail), [priority, shows, avail]);
+
+  // Apply filters
   const visibleCombos = useMemo(() => {
     let cs = combos;
     if (filters.excludeSon) cs = cs.filter(c => !c.cast.some(m => m.actor === '손승연'));
@@ -614,16 +677,28 @@ function App() {
         return a.slots.length - b.slots.length || b.score - a.score;
       });
     } else if (sort === 'earliest') {
-      // 가까운순: 가장 빠른 회차의 SHOW 인덱스 기준
-      const idx = (id) => SHOWS.findIndex(s => s.id === id);
+      // 가까운순: 사용자가 보는 '오늘' 기준으로 가장 빠른 가능 회차 정렬
+      const now = new Date();
+      const nowTime = now.getTime();
+      const showMap = Object.fromEntries(shows.map(s => [s.id, s]));
+      const nearestFromToday = (combo) => {
+        const futureDates = combo.slots
+          .map(id => showMap[id])
+          .filter(Boolean)
+          .map(show => parseShowDateTime(show, now))
+          .filter(date => date && date.getTime() >= nowTime)
+          .sort((a,b) => a - b);
+        return futureDates.length ? futureDates[0].getTime() : Number.POSITIVE_INFINITY;
+      };
+
       cs = [...cs].sort((a,b) => {
-        const ai = a.slots.length ? idx(a.slots[0]) : 999;
-        const bi = b.slots.length ? idx(b.slots[0]) : 999;
-        return ai - bi || b.score - a.score;
+        const at = nearestFromToday(a);
+        const bt = nearestFromToday(b);
+        return at - bt || b.score - a.score;
       });
     }
     return cs;
-  }, [combos, filters, sort]);
+  }, [combos, filters, sort, shows]);
 
   // Auto-select top combo when none chosen / when combo set changes
   useEffect(() => {
@@ -633,7 +708,9 @@ function App() {
   }, [visibleCombos, selectedId]);
 
   const selected = visibleCombos.find(c => c.id === selectedId);
-  const topCombos = visibleCombos.slice(0, 8);
+  const preferredCombos = useMemo(() => (
+    [...visibleCombos].sort((a,b) => b.score - a.score || a.slots.length - b.slots.length)
+  ), [visibleCombos]);
 
   return (
     <div style={{
@@ -641,7 +718,7 @@ function App() {
       display:'flex', flexDirection:'column', gap: 16,
     }}>
       <div className="surface" style={{padding: 0, overflow:'hidden'}}>
-        <Header comboCount={visibleCombos.length} showCount={SHOWS.length} sort={sort} setSort={setSort} />
+        <Header comboCount={visibleCombos.length} showCount={shows.length} sort={sort} setSort={setSort} />
 
         <div style={{display:'grid', gridTemplateColumns: '300px 1fr', gap: 0}}>
           {/* Left: priority */}
@@ -669,10 +746,10 @@ function App() {
             <section>
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 10}}>
                 <div>
-                  <h3 style={{fontSize: 13, fontWeight: 600, display:'inline'}}>상위 조합</h3>
-                  <span style={{fontSize: 11, color:'var(--ink-3)', marginLeft: 8}}>점수순 · 상위 {topCombos.length} / {visibleCombos.length}</span>
+                  <h3 style={{fontSize: 13, fontWeight: 600, display:'inline'}}>우선순위 조합</h3>
+                  <span style={{fontSize: 11, color:'var(--ink-3)', marginLeft: 8}}>선호도순 · 전체 {preferredCombos.length}개</span>
                 </div>
-                <span style={{fontSize: 11, color:'var(--ink-3)'}}>점수 = 역할별 우선순위 점수 합</span>
+                <span style={{fontSize: 11, color:'var(--ink-3)'}}>선호도 = 역할별 우선순위 선호도 합</span>
               </div>
               <div style={{
                 display:'grid', gridTemplateColumns:'32px 1fr 60px 70px',
@@ -681,11 +758,11 @@ function App() {
               }}>
                 <span>순위</span>
                 <span>조합</span>
-                <span style={{textAlign:'right'}}>점수</span>
+                <span style={{textAlign:'right'}}>선호도</span>
                 <span style={{textAlign:'right'}}>가능</span>
               </div>
-              <div style={{display:'flex', flexDirection:'column', gap: 1}}>
-                {topCombos.map(c => (
+              <div style={{display:'flex', flexDirection:'column', gap: 1, maxHeight: 216, overflowY:'auto', paddingRight: 4}}>
+                {preferredCombos.map(c => (
                   <ComboRow key={c.id} combo={c} selected={selectedId === c.id} onSelect={setSelectedId} focusShowId={focusShowId}/>
                 ))}
               </div>
@@ -700,14 +777,14 @@ function App() {
                 </div>
                 <Legend/>
               </div>
-              <Heatmap combos={topCombos} selectedId={selectedId} focusShowId={focusShowId} setFocusShowId={setFocusShowId} setSelectedId={setSelectedId}/>
+              <Heatmap shows={shows} combos={preferredCombos} selectedId={selectedId} focusShowId={focusShowId} setFocusShowId={setFocusShowId} setSelectedId={setSelectedId}/>
             </section>
           </div>
         </div>
       </div>
 
       {/* Detail bar */}
-      <DetailBar combo={selected} focusShowId={focusShowId}/>
+      <DetailBar combo={selected} shows={shows} focusShowId={focusShowId}/>
     </div>
   );
 }
