@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>배우 스케줄링</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface-2: #fbfaf6;
+    --line: #e7e3d8;
+    --line-2: #ddd8ca;
+    --ink: #1a1a1a;
+    --ink-2: #555048;
+    --ink-3: #8a8479;
+    --ink-4: #b8b3a6;
+    --accent: #2f6f5e;
+    --accent-2: #4a8a78;
+    --accent-soft: #d6e8e0;
+    --accent-softer: #ecf3ef;
+    --warn: #c95f44;
+    --warn-soft: #f9e7e0;
+    --gold: #b8893d;
+
+    --radius: 8px;
+    --radius-sm: 5px;
+
+    --shadow-sm: 0 1px 0 rgba(20,20,20,0.04);
+    --shadow-md: 0 1px 2px rgba(20,20,20,0.04), 0 4px 14px -8px rgba(20,20,20,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: 'tnum' 1; }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; padding: 0; }
+
+  .surface { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 99px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* Hide arrows on number inputs */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" data-presets="react">
+/* ============================================================
+   배우 스케줄링 — hi-fi
+   - 단일 리스트 우선순위 (드래그 정렬)
+   - 자동 조합 점수 계산
+   - 조합 × 회차 히트맵
+============================================================ */
+const { useState, useMemo, useRef, useEffect } = React;
+
+// ---------- Data ----------
+const ROLE_LIST = [
+  { id: 'L', name: '렘피카',   color: '#b56b8a' },
+  { id: 'R', name: '라파엘라', color: '#3f8a9e' },
+  { id: 'M', name: '마리네티', color: '#8b6f3a' },
+  { id: 'T', name: '타레우스', color: '#5a7a3f' },
+];
+const ROLE = Object.fromEntries(ROLE_LIST.map(r => [r.id, r]));
+
+// Initial priority list — flat order across all roles
+const INITIAL_PRIORITY = [
+  { roleId: 'L', actor: '정선아' },
+  { roleId: 'R', actor: '차지연' },
+  { roleId: 'M', actor: '조형균' },
+  { roleId: 'T', actor: '김민철' },
+  { roleId: 'L', actor: '김선영' },
+  { roleId: 'R', actor: '린아' },
+  { roleId: 'M', actor: '김호영' },
+  { roleId: 'T', actor: '김우형' },
+  { roleId: 'L', actor: '박혜나' },
+  { roleId: 'R', actor: '손승연' },
+];
+
+const SHOWS = [
+  { id: 's1',  d: '5/1',  dow: '목', t: '19:30' },
+  { id: 's2',  d: '5/2',  dow: '금', t: '14:00' },
+  { id: 's3',  d: '5/2',  dow: '금', t: '19:30' },
+  { id: 's4',  d: '5/3',  dow: '토', t: '14:00' },
+  { id: 's5',  d: '5/3',  dow: '일', t: '19:00' },
+  { id: 's6',  d: '5/4',  dow: '일', t: '14:00' },
+  { id: 's7',  d: '5/4',  dow: '일', t: '19:00' },
+  { id: 's8',  d: '5/6',  dow: '화', t: '19:30' },
+  { id: 's9',  d: '5/7',  dow: '수', t: '14:30' },
+  { id: 's10', d: '5/8',  dow: '목', t: '19:30' },
+  { id: 's11', d: '5/9',  dow: '금', t: '19:30' },
+  { id: 's12', d: '5/10', dow: '토', t: '14:00' },
+];
+
+// Per-actor availability — list of show ids they can do
+const AVAIL = {
+  '정선아': ['s1','s2','s5','s7','s10','s12'],
+  '김선영': ['s2','s3','s8','s9','s11'],
+  '박혜나': ['s4','s6','s7','s11'],
+  '차지연': ['s1','s3','s5','s8','s10','s12'],
+  '린아':   ['s2','s4','s6','s9','s11'],
+  '손승연': ['s5','s7','s12'],
+  '조형균': ['s1','s4','s5','s10','s11'],
+  '김호영': ['s2','s3','s6','s8','s9','s12'],
+  '김민철': ['s1','s3','s5','s7','s10'],
+  '김우형': ['s2','s4','s6','s8','s11','s12'],
+};
+
+// ---------- Derived ----------
+function buildCombos(priority) {
+  // group by role
+  const byRole = {L:[], R:[], M:[], T:[]};
+  priority.forEach((p, idx) => {
+    byRole[p.roleId].push({ ...p, rank: byRole[p.roleId].length + 1, globalIdx: idx });
+  });
+  // role-internal points: actor's role rank → role.length - rank + 1
+  const points = {};
+  Object.entries(byRole).forEach(([rid, list]) => {
+    list.forEach(p => { points[p.actor] = list.length - p.rank + 1; });
+  });
+
+  const combos = [];
+  for (const l of byRole.L) for (const r of byRole.R) for (const m of byRole.M) for (const t of byRole.T) {
+    const cast = [l, r, m, t];
+    const score = cast.reduce((s, c) => s + points[c.actor], 0);
+    // available shows = intersection
+    const slotIds = SHOWS
+      .filter(s => cast.every(c => AVAIL[c.actor].includes(s.id)))
+      .map(s => s.id);
+    combos.push({
+      id: cast.map(c => c.actor).join('|'),
+      cast: cast.map(c => ({ actor: c.actor, roleId: c.roleId, rank: c.rank })),
+      score,
+      slots: slotIds,
+    });
+  }
+  combos.sort((a,b) => b.score - a.score || a.slots.length - b.slots.length);
+  combos.forEach((c, i) => c.rank = i + 1);
+  return { combos, points };
+}
+
+// ---------- UI atoms ----------
+function RoleDot({roleId, size=8}) {
+  const r = ROLE[roleId];
+  return <span style={{
+    display:'inline-block', width:size, height:size, borderRadius:99,
+    background: r.color, flexShrink: 0
+  }}/>;
+}
+
+function RoleBadge({roleId}) {
+  const r = ROLE[roleId];
+  return <span style={{
+    display:'inline-flex', alignItems:'center', gap:4,
+    fontSize:10, fontWeight:600, color: r.color,
+    padding:'1px 5px', border:`1px solid ${r.color}33`, borderRadius:3,
+    background: `${r.color}10`,
+    letterSpacing: 0.2,
+  }}>{r.name}</span>;
+}
+
+function CastInline({cast, fontSize=13, weight=400}) {
+  return (
+    <span style={{display:'inline-flex', alignItems:'center', gap:6, flexWrap:'wrap', fontSize, fontWeight: weight}}>
+      {cast.map((c,i) => (
+        <React.Fragment key={i}>
+          <span style={{display:'inline-flex', alignItems:'center', gap:5}}>
+            <RoleDot roleId={c.roleId} />
+            <span>{c.actor}</span>
+          </span>
+          {i < cast.length-1 && <span style={{color:'var(--ink-4)'}}>×</span>}
+        </React.Fragment>
+      ))}
+    </span>
+  );
+}
+
+// ---------- Priority list (drag to reorder, full list) ----------
+function PriorityList({priority, setPriority, points}) {
+  const [dragId, setDragId] = useState(null);
+  const [overIdx, setOverIdx] = useState(null);
+
+  const move = (from, to) => {
+    if (from === to || from < 0 || to < 0) return;
+    setPriority(prev => {
+      const arr = [...prev];
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+      return arr;
+    });
+  };
+
+  const onDragStart = (e, idx) => {
+    setDragId(idx);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  const onDragOver = (e, idx) => {
+    e.preventDefault();
+    setOverIdx(idx);
+  };
+  const onDrop = (e, idx) => {
+    e.preventDefault();
+    if (dragId !== null) move(dragId, idx);
+    setDragId(null); setOverIdx(null);
+  };
+  const onDragEnd = () => { setDragId(null); setOverIdx(null); };
+
+  return (
+    <div style={{display:'flex', flexDirection:'column', gap:3}}>
+      {priority.map((p, i) => {
+        const role = ROLE[p.roleId];
+        const isDragging = dragId === i;
+        const isOver = overIdx === i && dragId !== null && dragId !== i;
+        return (
+          <div
+            key={`${p.roleId}-${p.actor}`}
+            draggable
+            onDragStart={(e) => onDragStart(e, i)}
+            onDragOver={(e) => onDragOver(e, i)}
+            onDrop={(e) => onDrop(e, i)}
+            onDragEnd={onDragEnd}
+            style={{
+              display:'grid',
+              gridTemplateColumns: '20px 22px 1fr auto',
+              alignItems:'center', gap:8,
+              padding:'7px 9px',
+              background: isOver ? 'var(--accent-softer)' : 'var(--surface)',
+              border: '1px solid ' + (isOver ? 'var(--accent)' : 'var(--line)'),
+              borderRadius: 6,
+              cursor: 'grab',
+              opacity: isDragging ? 0.4 : 1,
+              transition: 'background 80ms, border-color 80ms',
+            }}
+          >
+            <span className="mono" style={{
+              fontSize: 11, color:'var(--ink-3)', textAlign:'center', userSelect:'none'
+            }}>{i+1}</span>
+            <span style={{display:'flex', alignItems:'center'}}>
+              <RoleDot roleId={p.roleId} size={9} />
+            </span>
+            <span style={{display:'flex', alignItems:'baseline', gap:8, minWidth:0}}>
+              <span style={{
+                fontSize: 10, color: role.color, fontWeight:600,
+                letterSpacing: 0.2, flexShrink: 0
+              }}>{role.name}</span>
+              <span style={{fontSize: 13, fontWeight: 500, color:'var(--ink)'}}>{p.actor}</span>
+            </span>
+            <span className="mono" style={{
+              fontSize: 11, color:'var(--ink-3)', userSelect:'none'
+            }}>+{points[p.actor]}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------- Combo row (compact) ----------
+function ComboRow({combo, selected, onSelect, focusShowId}) {
+  const focusable = focusShowId && combo.slots.includes(focusShowId);
+  return (
+    <button
+      onClick={() => onSelect(combo.id)}
+      style={{
+        display:'grid',
+        gridTemplateColumns: '32px minmax(0,1fr) 60px 70px',
+        alignItems:'center', gap: 12,
+        padding: '10px 12px',
+        background: selected ? 'var(--accent-softer)' : 'transparent',
+        border: '1px solid ' + (selected ? 'var(--accent)' : 'transparent'),
+        borderRadius: 6,
+        textAlign:'left',
+        width:'100%',
+        cursor:'pointer',
+        transition: 'background 80ms, border-color 80ms',
+      }}
+      onMouseOver={(e) => { if (!selected) e.currentTarget.style.background = 'var(--surface-2)'; }}
+      onMouseOut={(e) => { if (!selected) e.currentTarget.style.background = 'transparent'; }}
+    >
+      <span style={{
+        display:'inline-flex', alignItems:'center', justifyContent:'center',
+        width: 24, height: 24, borderRadius: 99,
+        background: combo.rank <= 3 ? 'var(--accent)' : 'var(--surface)',
+        color: combo.rank <= 3 ? '#fff' : 'var(--ink-2)',
+        border: combo.rank <= 3 ? 'none' : '1px solid var(--line)',
+        fontSize: 11, fontWeight: 600,
+      }} className="mono">{combo.rank}</span>
+      <CastInline cast={combo.cast} fontSize={13} />
+      <span className="mono tnum" style={{
+        fontSize: 16, fontWeight: 600, color:'var(--ink)', textAlign:'right'
+      }}>{combo.score}</span>
+      <span className="mono tnum" style={{
+        fontSize: 12, color: combo.slots.length === 0 ? 'var(--ink-4)' : 'var(--ink-2)',
+        textAlign:'right'
+      }}>
+        {combo.slots.length}회
+        {focusable && <span style={{color:'var(--warn)', marginLeft:4}}>●</span>}
+      </span>
+    </button>
+  );
+}
+
+// ---------- Heatmap ----------
+function Heatmap({combos, selectedId, focusShowId, setFocusShowId, setSelectedId}) {
+  const COL_W = 60;
+  const ROW_H = 32;
+  const LABEL_W = 280;
+  const SCORE_W = 50;
+
+  return (
+    <div style={{overflowX:'auto'}}>
+      <div style={{minWidth: LABEL_W + SCORE_W + COL_W * SHOWS.length + 24}}>
+        {/* Column headers */}
+        <div style={{
+          display:'grid',
+          gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${SHOWS.length}, ${COL_W}px)`,
+          gap: 0, marginBottom: 6, alignItems:'end',
+          paddingBottom: 8, borderBottom: '1px solid var(--line)',
+        }}>
+          <div style={{fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, paddingLeft: 4}}>조합</div>
+          <div style={{fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, textAlign: 'right', paddingRight: 8}}>점수</div>
+          {SHOWS.map(s => {
+            const isFocus = focusShowId === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setFocusShowId(isFocus ? null : s.id)}
+                style={{
+                  textAlign: 'center', padding: '4px 2px',
+                  background: isFocus ? 'var(--warn-soft)' : 'transparent',
+                  borderRadius: 4, cursor: 'pointer',
+                  border: '1px solid ' + (isFocus ? 'var(--warn)' : 'transparent'),
+                }}
+              >
+                <div className="mono" style={{fontSize: 11, fontWeight: 600, color: isFocus ? 'var(--warn)' : 'var(--ink)'}}>{s.d}</div>
+                <div style={{fontSize: 10, color: isFocus ? 'var(--warn)' : 'var(--ink-3)'}}>{s.dow}</div>
+                <div className="mono" style={{fontSize: 10, color: isFocus ? 'var(--warn)' : 'var(--ink-2)'}}>{s.t}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Rows */}
+        {combos.map(c => {
+          const isSel = selectedId === c.id;
+          return (
+            <div
+              key={c.id}
+              onClick={() => setSelectedId(c.id)}
+              style={{
+                display:'grid',
+                gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${SHOWS.length}, ${COL_W}px)`,
+                alignItems:'center',
+                height: ROW_H,
+                background: isSel ? 'var(--accent-softer)' : 'transparent',
+                borderRadius: 4,
+                cursor:'pointer',
+              }}
+            >
+              <div style={{display:'flex', alignItems:'center', gap:8, paddingLeft: 4, minWidth:0}}>
+                <span style={{
+                  display:'inline-flex', alignItems:'center', justifyContent:'center',
+                  width: 18, height: 18, borderRadius: 99,
+                  background: c.rank <= 3 ? 'var(--accent)' : 'var(--surface-2)',
+                  color: c.rank <= 3 ? '#fff' : 'var(--ink-3)',
+                  border: c.rank <= 3 ? 'none' : '1px solid var(--line)',
+                  fontSize: 10, fontWeight: 600, flexShrink:0,
+                }} className="mono">{c.rank}</span>
+                <span style={{display:'flex', alignItems:'center', gap:4, fontSize: 12, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                  {c.cast.map((m, i) => (
+                    <React.Fragment key={i}>
+                      <RoleDot roleId={m.roleId} size={6} />
+                      <span style={{fontWeight: isSel ? 500 : 400}}>{m.actor}</span>
+                      {i < c.cast.length-1 && <span style={{color:'var(--ink-4)', margin:'0 2px'}}>·</span>}
+                    </React.Fragment>
+                  ))}
+                </span>
+              </div>
+              <div className="mono tnum" style={{fontSize: 13, fontWeight: 600, textAlign: 'right', paddingRight: 8}}>{c.score}</div>
+              {SHOWS.map(s => {
+                const has = c.slots.includes(s.id);
+                const isCellFocus = focusShowId === s.id;
+                let bg = 'transparent';
+                if (has && isSel) bg = 'var(--accent)';
+                else if (has) bg = 'var(--accent-soft)';
+
+                return (
+                  <div key={s.id} style={{
+                    padding: 3,
+                    background: isCellFocus && !has ? 'rgba(201,95,68,0.05)' : 'transparent',
+                  }}>
+                    <div style={{
+                      width: '100%', height: ROW_H - 8,
+                      background: bg,
+                      border: isCellFocus && has ? '1.5px solid var(--warn)' : has ? '1px solid transparent' : '1px dashed var(--line)',
+                      borderRadius: 3,
+                    }}/>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Selection detail bar ----------
+function DetailBar({combo, focusShowId}) {
+  if (!combo) return null;
+  const slots = combo.slots.map(id => SHOWS.find(s => s.id === id));
+  return (
+    <div className="surface" style={{
+      padding: '14px 18px',
+      display:'grid', gridTemplateColumns: '1fr auto auto', gap: 24, alignItems:'center'
+    }}>
+      <div style={{minWidth:0}}>
+        <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>선택 조합</div>
+        <CastInline cast={combo.cast} fontSize={16} weight={500} />
+      </div>
+      <div style={{display:'flex', gap: 18, alignItems:'baseline'}}>
+        <div>
+          <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>가능 회차</div>
+          <div style={{display:'flex', flexWrap:'wrap', gap: 4, maxWidth: 360}}>
+            {slots.map(s => (
+              <span key={s.id} className="mono tnum" style={{
+                fontSize: 11, padding: '2px 6px', borderRadius: 3,
+                background: focusShowId === s.id ? 'var(--warn-soft)' : 'var(--surface-2)',
+                color: focusShowId === s.id ? 'var(--warn)' : 'var(--ink-2)',
+                border: '1px solid ' + (focusShowId === s.id ? 'var(--warn)' : 'var(--line)'),
+                fontWeight: 500,
+              }}>
+                {s.d} {s.dow} {s.t}
+              </span>
+            ))}
+            {slots.length === 0 && <span style={{fontSize: 12, color:'var(--ink-3)'}}>가능한 회차 없음</span>}
+          </div>
+        </div>
+      </div>
+      <div style={{textAlign:'right'}}>
+        <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>점수</div>
+        <div className="mono tnum" style={{fontSize: 28, fontWeight: 600, color:'var(--accent)', lineHeight: 1}}>{combo.score}</div>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Filters ----------
+function FilterBar({filters, setFilters}) {
+  const items = [
+    { key: 'weekendOnly', label: '주말만' },
+    { key: 'matineeOnly', label: '낮공만' },
+    { key: 'hideSeen', label: '본 조합 제외' },
+    { key: 'excludeSon', label: '손승연 제외' },
+  ];
+  return (
+    <div style={{display:'flex', gap: 6, flexWrap:'wrap'}}>
+      {items.map(it => {
+        const on = filters[it.key];
+        return (
+          <button
+            key={it.key}
+            onClick={() => setFilters(f => ({...f, [it.key]: !f[it.key]}))}
+            style={{
+              padding: '5px 10px',
+              fontSize: 12,
+              borderRadius: 99,
+              border: '1px solid ' + (on ? 'var(--accent)' : 'var(--line)'),
+              background: on ? 'var(--accent)' : 'var(--surface)',
+              color: on ? '#fff' : 'var(--ink-2)',
+              fontWeight: 500,
+              transition: 'all 80ms',
+            }}
+          >{it.label}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------- Header ----------
+function Header({comboCount, showCount, sort, setSort}) {
+  return (
+    <div style={{
+      display:'flex', justifyContent:'space-between', alignItems:'flex-end',
+      padding: '20px 24px 16px', borderBottom: '1px solid var(--line)',
+    }}>
+      <div>
+        <div style={{display:'flex', alignItems:'center', gap: 10, marginBottom: 4}}>
+          <div style={{width: 22, height: 22, borderRadius: 6, background:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize: 13, fontWeight: 600}}>♪</div>
+          <div style={{fontSize: 18, fontWeight: 600, letterSpacing: -0.2}}>배우 스케줄링</div>
+        </div>
+        <div style={{fontSize: 12, color:'var(--ink-3)'}}>
+          우선순위로 조합 점수를 매기고, 시간 순으로 회차를 탐색
+        </div>
+      </div>
+      <div style={{display:'flex', gap: 16, alignItems:'center', fontSize: 12}}>
+        <Stat label="조합" value={comboCount} />
+        <Sep />
+        <Stat label="회차" value={showCount} />
+        <Sep />
+        <div style={{display:'flex', flexDirection:'column', gap:2}}>
+          <span style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5}}>정렬</span>
+          <div style={{display:'flex', gap: 2, padding: 2, background:'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 6}}>
+            {[
+              {k:'score',    l:'점수↓',   tip:'점수 높은 순'},
+              {k:'slotsDesc',l:'회차↓',   tip:'가능 회차 많은 순'},
+              {k:'rare',     l:'희소성',  tip:'가능 회차 적은 순 (놓치기 쉬움)'},
+              {k:'earliest', l:'가까운순', tip:'가장 빠른 회차 기준'},
+            ].map(o => (
+              <button
+                key={o.k}
+                onClick={() => setSort(o.k)}
+                title={o.tip}
+                style={{
+                  padding: '3px 8px', fontSize: 11, fontWeight: 500,
+                  borderRadius: 4,
+                  background: sort === o.k ? 'var(--surface)' : 'transparent',
+                  border: '1px solid ' + (sort === o.k ? 'var(--line)' : 'transparent'),
+                  color: sort === o.k ? 'var(--ink)' : 'var(--ink-3)',
+                  boxShadow: sort === o.k ? 'var(--shadow-sm)' : 'none',
+                }}
+              >{o.l}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+const Stat = ({label, value}) => (
+  <div style={{display:'flex', flexDirection:'column', gap:2}}>
+    <span style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5}}>{label}</span>
+    <span className="mono tnum" style={{fontSize: 16, fontWeight: 600}}>{value}</span>
+  </div>
+);
+const Sep = () => <div style={{width:1, height:24, background:'var(--line)'}}/>;
+
+// ---------- Legend ----------
+function Legend() {
+  const items = [
+    { sw: <div style={{width:12, height:12, border:'1px dashed var(--line-2)', borderRadius:2}}/>, l: '없음' },
+    { sw: <div style={{width:12, height:12, background:'var(--accent-soft)', borderRadius:2}}/>, l: '출연 가능' },
+    { sw: <div style={{width:12, height:12, background:'var(--accent)', borderRadius:2}}/>, l: '선택 조합' },
+    { sw: <div style={{width:12, height:12, border:'1.5px solid var(--warn)', background:'#fff', borderRadius:2}}/>, l: '포커스 회차' },
+  ];
+  return (
+    <div style={{display:'flex', gap: 14, alignItems:'center', flexWrap:'wrap'}}>
+      {items.map((it, i) => (
+        <div key={i} style={{display:'flex', alignItems:'center', gap: 6, fontSize: 11, color:'var(--ink-2)'}}>
+          {it.sw}<span>{it.l}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Role legend ----------
+function RoleLegend() {
+  return (
+    <div style={{display:'flex', gap: 12, flexWrap:'wrap'}}>
+      {ROLE_LIST.map(r => (
+        <span key={r.id} style={{display:'inline-flex', alignItems:'center', gap:5, fontSize: 11, color:'var(--ink-2)'}}>
+          <RoleDot roleId={r.id} size={8} />{r.name}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ---------- App ----------
+function App() {
+  const [priority, setPriority] = useState(INITIAL_PRIORITY);
+  const [filters, setFilters] = useState({weekendOnly:false, matineeOnly:false, hideSeen:false, excludeSon:false});
+  const [sort, setSort] = useState('score');
+  const [selectedId, setSelectedId] = useState(null);
+  const [focusShowId, setFocusShowId] = useState('s5'); // 5/3 일 19:00
+
+  const { combos, points } = useMemo(() => buildCombos(priority), [priority]);
+
+  // Apply filters (just visual mock for excludeSon — others would touch SHOWS)
+  const visibleCombos = useMemo(() => {
+    let cs = combos;
+    if (filters.excludeSon) cs = cs.filter(c => !c.cast.some(m => m.actor === '손승연'));
+    if (sort === 'slotsDesc') {
+      cs = [...cs].sort((a,b) => b.slots.length - a.slots.length || b.score - a.score);
+    } else if (sort === 'rare') {
+      // 희소성: 가능 회차가 적을수록 위 (단 0회는 맨 아래)
+      cs = [...cs].sort((a,b) => {
+        if (a.slots.length === 0 && b.slots.length !== 0) return 1;
+        if (b.slots.length === 0 && a.slots.length !== 0) return -1;
+        return a.slots.length - b.slots.length || b.score - a.score;
+      });
+    } else if (sort === 'earliest') {
+      // 가까운순: 가장 빠른 회차의 SHOW 인덱스 기준
+      const idx = (id) => SHOWS.findIndex(s => s.id === id);
+      cs = [...cs].sort((a,b) => {
+        const ai = a.slots.length ? idx(a.slots[0]) : 999;
+        const bi = b.slots.length ? idx(b.slots[0]) : 999;
+        return ai - bi || b.score - a.score;
+      });
+    }
+    return cs;
+  }, [combos, filters, sort]);
+
+  // Auto-select top combo when none chosen / when combo set changes
+  useEffect(() => {
+    if (!selectedId || !visibleCombos.find(c => c.id === selectedId)) {
+      if (visibleCombos[0]) setSelectedId(visibleCombos[0].id);
+    }
+  }, [visibleCombos, selectedId]);
+
+  const selected = visibleCombos.find(c => c.id === selectedId);
+  const topCombos = visibleCombos.slice(0, 8);
+
+  return (
+    <div style={{
+      maxWidth: 1400, margin: '0 auto', padding: 20,
+      display:'flex', flexDirection:'column', gap: 16,
+    }}>
+      <div className="surface" style={{padding: 0, overflow:'hidden'}}>
+        <Header comboCount={visibleCombos.length} showCount={SHOWS.length} sort={sort} setSort={setSort} />
+
+        <div style={{display:'grid', gridTemplateColumns: '300px 1fr', gap: 0}}>
+          {/* Left: priority */}
+          <div style={{padding: '18px 18px', borderRight: '1px solid var(--line)', background:'var(--surface-2)'}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 12}}>
+              <h3 style={{fontSize: 13, fontWeight: 600}}>우선순위</h3>
+              <span className="mono" style={{fontSize: 11, color:'var(--ink-3)'}}>{priority.length}명</span>
+            </div>
+            <div style={{fontSize: 11, color:'var(--ink-3)', marginBottom: 10}}>
+              한 줄로 줄세우기 — 드래그하여 순서 변경
+            </div>
+            <PriorityList priority={priority} setPriority={setPriority} points={points}/>
+            <div style={{marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line)'}}>
+              <div style={{fontSize: 11, color:'var(--ink-3)', marginBottom: 8}}>필터</div>
+              <FilterBar filters={filters} setFilters={setFilters}/>
+            </div>
+            <div style={{marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line)'}}>
+              <RoleLegend/>
+            </div>
+          </div>
+
+          {/* Right: combos + heatmap */}
+          <div style={{padding: '18px 22px', display:'flex', flexDirection:'column', gap: 22, minWidth: 0}}>
+            {/* Top combos panel */}
+            <section>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 10}}>
+                <div>
+                  <h3 style={{fontSize: 13, fontWeight: 600, display:'inline'}}>상위 조합</h3>
+                  <span style={{fontSize: 11, color:'var(--ink-3)', marginLeft: 8}}>점수순 · 상위 {topCombos.length} / {visibleCombos.length}</span>
+                </div>
+                <span style={{fontSize: 11, color:'var(--ink-3)'}}>점수 = 역할별 우선순위 점수 합</span>
+              </div>
+              <div style={{
+                display:'grid', gridTemplateColumns:'32px 1fr 60px 70px',
+                padding: '4px 12px', fontSize: 10, color:'var(--ink-3)',
+                textTransform:'uppercase', letterSpacing: 0.5, gap: 12,
+              }}>
+                <span>순위</span>
+                <span>조합</span>
+                <span style={{textAlign:'right'}}>점수</span>
+                <span style={{textAlign:'right'}}>가능</span>
+              </div>
+              <div style={{display:'flex', flexDirection:'column', gap: 1}}>
+                {topCombos.map(c => (
+                  <ComboRow key={c.id} combo={c} selected={selectedId === c.id} onSelect={setSelectedId} focusShowId={focusShowId}/>
+                ))}
+              </div>
+            </section>
+
+            {/* Heatmap */}
+            <section>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 10}}>
+                <div>
+                  <h3 style={{fontSize: 13, fontWeight: 600, display:'inline'}}>조합 × 회차 히트맵</h3>
+                  <span style={{fontSize: 11, color:'var(--ink-3)', marginLeft: 8}}>회차 헤더를 누르면 포커스</span>
+                </div>
+                <Legend/>
+              </div>
+              <Heatmap combos={topCombos} selectedId={selectedId} focusShowId={focusShowId} setFocusShowId={setFocusShowId} setSelectedId={setSelectedId}/>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      {/* Detail bar */}
+      <DetailBar combo={selected} focusShowId={focusShowId}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
