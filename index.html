@@ -2,794 +2,567 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>배우 스케줄링</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
-  :root {
-    --bg: #f7f5f0;
-    --surface: #ffffff;
-    --surface-2: #fbfaf6;
-    --line: #e7e3d8;
-    --line-2: #ddd8ca;
-    --ink: #1a1a1a;
-    --ink-2: #555048;
-    --ink-3: #8a8479;
-    --ink-4: #b8b3a6;
-    --accent: #2f6f5e;
-    --accent-2: #4a8a78;
-    --accent-soft: #d6e8e0;
-    --accent-softer: #ecf3ef;
-    --warn: #c95f44;
-    --warn-soft: #f9e7e0;
-    --gold: #b8893d;
-
-    --radius: 8px;
-    --radius-sm: 5px;
-
-    --shadow-sm: 0 1px 0 rgba(20,20,20,0.04);
-    --shadow-md: 0 1px 2px rgba(20,20,20,0.04), 0 4px 14px -8px rgba(20,20,20,0.08);
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 14px;
-    line-height: 1.45;
-    -webkit-font-smoothing: antialiased;
-  }
-  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: 'tnum' 1; }
-  .tnum { font-variant-numeric: tabular-nums; }
-
-  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; padding: 0; }
-
-  .surface { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 99px; border: 2px solid var(--bg); }
-  ::-webkit-scrollbar-track { background: transparent; }
-
-  /* Hide arrows on number inputs */
-  input[type=number]::-webkit-inner-spin-button,
-  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+:root{--bg:#f7f5f0;--surface:#fff;--surface-2:#fbfaf6;--line:#e7e3d8;--line-2:#ddd8ca;--ink:#1a1a1a;--ink-2:#555048;--ink-3:#8a8479;--ink-4:#b8b3a6;--accent:#2f6f5e;--accent-2:#4a8a78;--accent-soft:#d6e8e0;--accent-softer:#ecf3ef;--warn:#c95f44;--warn-soft:#f9e7e0;--gold:#b8893d;--radius:8px;--shadow-sm:0 1px 0 rgba(20,20,20,.04);--shadow-md:0 1px 2px rgba(20,20,20,.04),0 4px 14px -8px rgba(20,20,20,.08);--combo-row-h:58px}*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Pretendard,Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.tnum{font-variant-numeric:tabular-nums}button,select,input{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer;padding:0}select,input[type=date]{height:28px;border:1px solid var(--line);border-radius:5px;background:var(--surface);padding:0 7px;font-size:12px}::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:99px;border:2px solid var(--bg)}::-webkit-scrollbar-track{background:transparent}.surface{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}.app-shell{max-width:1480px;margin:0 auto;padding:20px}.app-card{overflow:hidden}.top-header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:20px 24px 16px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}.brand span{width:22px;height:22px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600}.brand strong{font-size:18px;font-weight:650;letter-spacing:-.2px}.top-header p{margin:0;color:var(--ink-3);font-size:12px}.top-stats{display:flex;gap:14px;align-items:center}.top-stats div{display:flex;flex-direction:column;gap:2px}.top-stats span{font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px}.top-stats b{font-size:14px;font-weight:650;font-variant-numeric:tabular-nums}.top-stats i{width:1px;height:34px;background:var(--line)}.main-grid{display:grid;grid-template-columns:372px minmax(0,1fr)}.priority-panel{padding:16px;border-right:1px solid var(--line);background:var(--surface-2)}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.panel-head h3,.section-head h3{font-size:13px;font-weight:650;margin:0}.hint{font-size:11px;color:var(--ink-3);margin-bottom:10px}.priority-list{display:flex;flex-direction:column;gap:4px}.priority-row{display:grid;grid-template-columns:14px 22px minmax(0,82px) minmax(0,1fr) 18px 48px;align-items:center;gap:6px;padding:5px 6px 5px 4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;transition:background 80ms,border-color 80ms}.priority-row.is-incomplete{background:transparent;border-style:dashed}.grip{cursor:grab;color:var(--ink-4);font-size:10px;line-height:1;text-align:center;user-select:none;letter-spacing:-2px}.row-num{font-size:11px;color:var(--ink-3);text-align:center;user-select:none}.role-pick{font-weight:600}.actor-pick{font-weight:500;color:var(--ink)}.actor-pick:disabled{opacity:.5;color:var(--ink-3)}.delete-btn{color:var(--ink-4);font-size:14px;line-height:1;padding:2px;border-radius:3px}.delete-btn:hover{color:var(--warn);background:var(--warn-soft)}.move-buttons{display:grid;grid-template-columns:1fr 1fr;gap:3px}.move-buttons button{height:24px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);color:var(--ink-3);font-size:10px;line-height:1}.move-buttons button:not(:disabled):hover{color:var(--accent);border-color:var(--accent);background:var(--accent-softer)}.move-buttons button:disabled{opacity:.3;cursor:default}.add-priority{margin-top:4px;padding:7px 10px;border:1px dashed var(--line-2);border-radius:6px;color:var(--ink-3);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:4px}.add-priority:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-softer)}.formula-box{margin-top:8px;padding:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;font-size:11px;color:var(--ink-3);line-height:1.5}.formula-box strong{color:var(--ink-2)}.filter-block{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.filter-title{font-size:11px;color:var(--ink-3);margin-bottom:8px}.filter-chips{display:flex;gap:5px;flex-wrap:wrap}.chip{padding:4px 9px;font-size:11px;line-height:1.25;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-weight:500;transition:80ms}.chip.is-on{border-color:var(--accent);background:var(--accent);color:#fff}.content-panel{padding:18px 22px;display:flex;flex-direction:column;gap:18px;min-width:0}.section-block{padding:14px 16px}.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:10px}.section-head p{margin:3px 0 0;color:var(--ink-3);font-size:11px}.recommend-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.recommend-card{display:block;text-align:left;width:100%;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--surface-2);transition:80ms}.recommend-card:hover{border-color:var(--accent);background:var(--accent-softer)}.recommend-card.primary{background:linear-gradient(180deg,#fff,var(--accent-softer))}.card-label,.label{font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;font-weight:650;margin-bottom:4px}.card-main-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.card-date{font-size:22px;line-height:1.1;font-weight:750;letter-spacing:-.5px;color:var(--accent)}.card-badge{font-size:12px;font-weight:700;color:var(--ink-2);white-space:nowrap}.card-sub{margin-top:6px;font-size:11px;color:var(--ink-3)}.match-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.match-chip{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;color:var(--role-color)}.match-chip.miss{color:var(--ink-4);font-weight:500}.match-chip.hit .mark{color:var(--role-color)}.match-chip.miss .mark{color:var(--ink-4)}.subsection-head{display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px}.subsection-head h4{margin:0;font-size:12px}.subsection-head span{font-size:11px;color:var(--ink-3)}.candidate-list{max-height:360px;overflow-y:scroll;border:1px solid var(--line);border-radius:7px;background:var(--surface-2)}.candidate-row{display:grid;grid-template-columns:130px minmax(0,1fr) 88px;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;background:var(--surface)}.candidate-row:last-child{border-bottom:0}.candidate-row:hover{background:var(--accent-softer)}.candidate-date{display:flex;flex-direction:column;gap:1px}.candidate-date strong{font-size:17px;color:var(--ink)}.candidate-date span{font-size:12px;color:var(--ink-2)}.candidate-date em{font-style:normal;font-size:10px;color:var(--gold);font-weight:700}.candidate-score{display:flex;align-items:center;justify-content:flex-end;gap:7px}.match-count{font-size:15px;font-weight:750;color:var(--accent)}.combo-rank{font-size:12px;font-weight:700;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:2px 6px}.candidate-detail{grid-column:1/-1;margin-top:4px;padding:8px;border-radius:6px;background:var(--surface-2);font-size:12px;color:var(--ink-2);display:flex;flex-direction:column;gap:4px}.cast-lines{display:inline-flex;flex-direction:column;gap:3px;min-width:0;line-height:1.25}.cast-line{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.cast-actor{display:inline-flex;align-items:baseline;gap:2px;flex-shrink:0}.cast-actor.is-highlight{font-weight:750}.star{font-size:.78em;line-height:1;margin-left:1px}.sep{color:var(--ink-4)}.date-sort-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}.date-range-control{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.date-range-control>span:first-child,.sort-control>span{font-size:11px;font-weight:650;color:var(--ink-2)}.date-range-control label{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-3)}.dash{color:var(--ink-4)}.sort-control{display:flex;align-items:center;gap:6px;margin-left:auto}.seg{display:flex;gap:2px;padding:2px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px}.seg button{padding:4px 9px;font-size:11px;font-weight:500;border-radius:4px;color:var(--ink-3)}.seg button.active{background:var(--surface);border:1px solid var(--line);color:var(--ink);box-shadow:var(--shadow-sm)}.selected-detail-bar{display:grid;grid-template-columns:210px minmax(0,1fr) auto;align-items:center;gap:18px;padding:13px 16px;margin-bottom:10px;background:var(--surface-2)}.selected-date strong{display:block;font-size:24px;line-height:1.1;color:var(--accent);letter-spacing:-.4px}.selected-date span{display:inline-block;margin-top:4px;font-size:10px;color:var(--gold);font-weight:700}.selected-cast{overflow-x:auto}.selected-score{text-align:right}.selected-score strong{font-size:26px;line-height:1;color:var(--accent);font-family:"JetBrains Mono",monospace}.legend{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.legend span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-2)}.lg{width:12px;height:12px;border-radius:2px;display:inline-block}.lg.off{border:1px dashed var(--line-2)}.lg.on{background:var(--accent-soft)}.lg.sel{background:var(--accent)}.lg.focus{border:1.5px solid var(--warn);background:rgba(201,95,68,.05)}.lg.current{border:1.5px solid var(--gold);background:rgba(184,137,61,.14)}.lg.past{background:var(--surface-2);border:1px solid var(--line-2);opacity:.65}.heatmap-x-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:7px;background:var(--surface)}.heatmap-header,.heatmap-row{display:grid;align-items:center}.heatmap-header{gap:0;padding:8px 10px 8px 8px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:2}.heatmap-header>div{font-size:11px;color:var(--ink-3);font-weight:600;padding-left:4px}.heatmap-header .right{text-align:right;padding-right:8px}.show-head{text-align:center;padding:4px 2px;border-radius:4px;border:1px solid transparent}.show-head:hover,.show-head.focus{border-color:var(--warn);background:var(--warn-soft)}.show-head.current{border-color:var(--gold);background:rgba(184,137,61,.14)}.show-head.past{opacity:.62}.show-head b{display:block;font-size:11px}.show-head span{display:block;font-size:10px;color:var(--ink-3)}.show-head em{display:block;font-style:normal;font-size:9px;font-weight:700;color:var(--accent)}.show-head small{display:block;font-size:9px;color:var(--gold);font-weight:700}.heatmap-y-scroll{max-height:456px;overflow-y:scroll}.heatmap-row{min-height:58px;padding:2px 10px 2px 8px;border-bottom:1px solid rgba(231,227,216,.55);cursor:pointer}.heatmap-row:hover{background:var(--surface-2)}.heatmap-row.selected{background:var(--accent-softer)}.combo-label{display:flex;align-items:center;gap:8px;min-width:0;overflow:visible;padding-left:4px}.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:99px;flex-shrink:0;background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line);font-size:11px;font-weight:700;font-family:"JetBrains Mono",monospace}.rank-badge.top{background:var(--accent);color:#fff;border-color:var(--accent)}.pref-value{text-align:right;padding-right:8px;font-size:13px;font-weight:700;font-family:"JetBrains Mono",monospace}.hm-cell-wrap{padding:3px}.hm-cell{width:100%;height:44px;border-radius:3px}.hm-cell.off{border:1px dashed var(--line)}.hm-cell.on{background:var(--accent-soft);border:1px solid transparent}.hm-cell.sel{background:var(--accent)}.hm-cell.past{background:var(--surface-2);border:1px solid var(--line-2);opacity:.58}.hm-cell-wrap.focus .hm-cell{outline:1.5px solid var(--warn);outline-offset:-1px}.hm-cell-wrap.current .hm-cell{outline:1.5px solid var(--gold);outline-offset:-1px}.combo-head{display:grid;grid-template-columns:38px minmax(0,1fr) 70px 64px;gap:12px;padding:4px 12px;font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px}.combo-head span:nth-child(n+3){text-align:right}.priority-combo-scroll{height:calc(var(--combo-row-h) * 4.5 + 8px);overflow-y:scroll;display:flex;flex-direction:column;gap:1px}.combo-row{display:grid;grid-template-columns:38px minmax(0,1fr) 70px 64px;align-items:center;gap:12px;min-height:var(--combo-row-h);padding:8px 12px;border:1px solid transparent;border-radius:6px;text-align:left;width:100%}.combo-row:hover{background:var(--surface-2)}.combo-row.selected{background:var(--accent-softer);border-color:var(--accent)}.combo-cast{min-width:0;overflow-x:auto}.slot-count{text-align:right;font-size:12px;color:var(--ink-2);font-family:"JetBrains Mono",monospace}.empty-note{font-size:12px;color:var(--ink-3)}.padded{padding:20px}@media(max-width:900px){.app-shell{padding:8px}.top-header{align-items:flex-start;flex-direction:column}.top-stats{flex-wrap:wrap}.top-stats i{display:none}.main-grid{grid-template-columns:1fr}.priority-panel{border-right:0;border-bottom:1px solid var(--line)}.content-panel{padding:14px 10px}.recommend-grid{grid-template-columns:1fr}.candidate-row{grid-template-columns:96px minmax(0,1fr);align-items:flex-start}.candidate-score{grid-column:1/-1;justify-content:flex-start}.section-head{flex-direction:column}.date-sort-row{align-items:flex-start}.selected-detail-bar{grid-template-columns:1fr}.card-date{font-size:20px}.heatmap-section{display:none}.priority-row{grid-template-columns:14px 22px minmax(0,82px) minmax(0,1fr) 18px 48px}.cast-line{white-space:normal}.combo-head,.combo-row{grid-template-columns:36px minmax(0,1fr) 56px 48px;gap:8px}.priority-combo-scroll{height:calc(var(--combo-row-h) * 5.5)}}
 </style>
 </head>
 <body>
 <div id="root"></div>
-
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-
-<script type="text/babel" data-presets="react">
-/* ============================================================
-   배우 스케줄링 — hi-fi
-   - 단일 리스트 우선순위 (드래그 정렬)
-   - 자동 조합 점수 계산
-   - 조합 × 회차 히트맵
-============================================================ */
-const { useState, useMemo, useRef, useEffect } = React;
-
-// ---------- Data ----------
-const ROLE_LIST = [
-  { id: 'L', name: '렘피카',   color: '#b56b8a' },
-  { id: 'R', name: '라파엘라', color: '#3f8a9e' },
-  { id: 'M', name: '마리네티', color: '#8b6f3a' },
-  { id: 'T', name: '타레우스', color: '#5a7a3f' },
-];
+<script>
+const ROLE_LIST = [{"id":"lempicka","name":"렘피카","color":"#b56b8a"},{"id":"rafaela","name":"라파엘라","color":"#3f8a9e"},{"id":"marinetti","name":"마리네티","color":"#8b6f3a"},{"id":"tadeusz","name":"타데우스","color":"#5a7a3f"},{"id":"suzy","name":"수지","color":"#8a67a9"},{"id":"baroness","name":"남작부인","color":"#9b6d4d"},{"id":"baron","name":"남작","color":"#6f768c"}];
 const ROLE = Object.fromEntries(ROLE_LIST.map(r => [r.id, r]));
+const ROLE_IDS = ROLE_LIST.map(r => r.id);
+const ROLE_ACTORS = {"lempicka": ["정선아","김선영","박혜나"],"rafaela": ["차지연","손승연","린아"],"marinetti": ["조형균","김호영"],"tadeusz": ["김민철","김우형"],"suzy": ["김혜미","최정원"],"baroness": ["김현숙","윤사봉"],"baron": ["김남수","김민수"]};
+const INITIAL_PRIORITY = [{"roleId":"lempicka","actor":"정선아"},{"roleId":"rafaela","actor":"차지연"},{"roleId":"marinetti","actor":"조형균"},{"roleId":"tadeusz","actor":"김민철"},{"roleId":"suzy","actor":"김혜미"},{"roleId":"baroness","actor":"김현숙"},{"roleId":"baron","actor":"김남수"}];
+const RAW_SHOWS = [{"id":"s001","date":"2026-03-21","dowText":"토","t":"19:00","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s002","date":"2026-03-22","dowText":"일","t":"14:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s003","date":"2026-03-22","dowText":"일","t":"19:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s004","date":"2026-03-24","dowText":"화","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"차지연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s005","date":"2026-03-25","dowText":"수","t":"14:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s006","date":"2026-03-25","dowText":"수","t":"19:30","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s007","date":"2026-03-26","dowText":"목","t":"19:30","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s008","date":"2026-03-27","dowText":"금","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s009","date":"2026-03-28","dowText":"토","t":"14:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s010","date":"2026-03-28","dowText":"토","t":"19:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"김호영","tadeusz":"김민철","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s011","date":"2026-03-29","dowText":"일","t":"14:00","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s012","date":"2026-03-29","dowText":"일","t":"19:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s013","date":"2026-03-31","dowText":"화","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s014","date":"2026-04-01","dowText":"수","t":"14:30","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s015","date":"2026-04-01","dowText":"수","t":"19:30","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s016","date":"2026-04-02","dowText":"목","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s017","date":"2026-04-03","dowText":"금","t":"19:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s018","date":"2026-04-04","dowText":"토","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s019","date":"2026-04-04","dowText":"토","t":"19:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s020","date":"2026-04-05","dowText":"일","t":"14:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s021","date":"2026-04-05","dowText":"일","t":"19:00","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s022","date":"2026-04-07","dowText":"화","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s023","date":"2026-04-08","dowText":"수","t":"14:30","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s024","date":"2026-04-08","dowText":"수","t":"19:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s025","date":"2026-04-09","dowText":"목","t":"19:30","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s026","date":"2026-04-10","dowText":"금","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s027","date":"2026-04-11","dowText":"토","t":"14:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s028","date":"2026-04-11","dowText":"토","t":"19:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s029","date":"2026-04-12","dowText":"일","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s030","date":"2026-04-12","dowText":"일","t":"19:00","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s031","date":"2026-04-14","dowText":"화","t":"19:30","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s032","date":"2026-04-15","dowText":"수","t":"14:30","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s033","date":"2026-04-15","dowText":"수","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s034","date":"2026-04-16","dowText":"목","t":"19:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s035","date":"2026-04-17","dowText":"금","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s036","date":"2026-04-18","dowText":"토","t":"14:00","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s037","date":"2026-04-18","dowText":"토","t":"19:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s038","date":"2026-04-19","dowText":"일","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s039","date":"2026-04-19","dowText":"일","t":"19:00","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s040","date":"2026-04-21","dowText":"화","t":"19:30","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s041","date":"2026-04-22","dowText":"수","t":"14:30","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s042","date":"2026-04-22","dowText":"수","t":"19:30","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s043","date":"2026-04-23","dowText":"목","t":"19:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s044","date":"2026-04-24","dowText":"금","t":"19:30","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s045","date":"2026-04-25","dowText":"토","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s046","date":"2026-04-25","dowText":"토","t":"19:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s047","date":"2026-04-26","dowText":"일","t":"14:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s048","date":"2026-04-26","dowText":"일","t":"19:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s049","date":"2026-04-29","dowText":"수","t":"14:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s050","date":"2026-04-29","dowText":"수","t":"19:30","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s051","date":"2026-04-30","dowText":"목","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s052","date":"2026-05-01","dowText":"금","t":"19:30","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s053","date":"2026-05-02","dowText":"토","t":"14:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s054","date":"2026-05-02","dowText":"토","t":"19:00","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s055","date":"2026-05-03","dowText":"일","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s056","date":"2026-05-03","dowText":"일","t":"19:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s057","date":"2026-05-05","dowText":"화","t":"19:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"김현숙","baron":"김민수"}},{"id":"s058","date":"2026-05-06","dowText":"수","t":"19:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s059","date":"2026-05-07","dowText":"목","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s060","date":"2026-05-08","dowText":"금","t":"19:30","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s061","date":"2026-05-09","dowText":"토","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s062","date":"2026-05-09","dowText":"토","t":"19:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s063","date":"2026-05-10","dowText":"일","t":"14:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s064","date":"2026-05-10","dowText":"일","t":"19:00","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s065","date":"2026-05-12","dowText":"화","t":"19:30","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s066","date":"2026-05-13","dowText":"수","t":"14:30","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s067","date":"2026-05-13","dowText":"수","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s068","date":"2026-05-14","dowText":"목","t":"19:30","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s069","date":"2026-05-15","dowText":"금","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s070","date":"2026-05-16","dowText":"토","t":"14:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"김호영","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s071","date":"2026-05-16","dowText":"토","t":"19:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s072","date":"2026-05-17","dowText":"일","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s073","date":"2026-05-17","dowText":"일","t":"19:00","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s074","date":"2026-05-19","dowText":"화","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s075","date":"2026-05-20","dowText":"수","t":"14:30","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s076","date":"2026-05-20","dowText":"수","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s077","date":"2026-05-21","dowText":"목","t":"19:30","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s078","date":"2026-05-22","dowText":"금","t":"19:30","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s079","date":"2026-05-23","dowText":"토","t":"14:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s080","date":"2026-05-23","dowText":"토","t":"19:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김남수"}},{"id":"s081","date":"2026-05-24","dowText":"일","t":"14:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s082","date":"2026-05-24","dowText":"일","t":"19:00","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s083","date":"2026-05-25","dowText":"월","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s084","date":"2026-05-25","dowText":"월","t":"19:00","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s085","date":"2026-05-27","dowText":"수","t":"14:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s086","date":"2026-05-27","dowText":"수","t":"19:30","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s087","date":"2026-05-28","dowText":"목","t":"19:30","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s088","date":"2026-05-29","dowText":"금","t":"19:30","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s089","date":"2026-05-30","dowText":"토","t":"14:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s090","date":"2026-05-30","dowText":"토","t":"19:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s091","date":"2026-05-31","dowText":"일","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s092","date":"2026-05-31","dowText":"일","t":"19:00","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s093","date":"2026-06-02","dowText":"화","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s094","date":"2026-06-03","dowText":"수","t":"14:00","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s095","date":"2026-06-03","dowText":"수","t":"19:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s096","date":"2026-06-04","dowText":"목","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s097","date":"2026-06-05","dowText":"금","t":"19:30","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s098","date":"2026-06-06","dowText":"토","t":"14:00","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s099","date":"2026-06-06","dowText":"토","t":"19:00","cast":{"lempicka":"박혜나","rafaela":"차지연","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김남수"}},{"id":"s100","date":"2026-06-07","dowText":"일","t":"14:00","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s101","date":"2026-06-07","dowText":"일","t":"19:00","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"}},{"id":"s102","date":"2026-06-09","dowText":"화","t":"19:30","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s103","date":"2026-06-10","dowText":"수","t":"14:30","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s104","date":"2026-06-10","dowText":"수","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s105","date":"2026-06-11","dowText":"목","t":"19:30","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s106","date":"2026-06-12","dowText":"금","t":"14:30","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s107","date":"2026-06-12","dowText":"금","t":"19:30","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s108","date":"2026-06-13","dowText":"토","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s109","date":"2026-06-13","dowText":"토","t":"19:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s110","date":"2026-06-14","dowText":"일","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s111","date":"2026-06-14","dowText":"일","t":"19:00","cast":{"lempicka":"정선아","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s112","date":"2026-06-16","dowText":"화","t":"19:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김남수"}},{"id":"s113","date":"2026-06-17","dowText":"수","t":"14:30","cast":{"lempicka":"김선영","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s114","date":"2026-06-17","dowText":"수","t":"19:30","cast":{"lempicka":"정선아","rafaela":"린아","marinetti":"조형균","tadeusz":"김민철","suzy":"최정원","baroness":"윤사봉","baron":"김민수"}},{"id":"s115","date":"2026-06-18","dowText":"목","t":"19:30","cast":{"lempicka":"김선영","rafaela":"차지연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"김현숙","baron":"김남수"}},{"id":"s116","date":"2026-06-19","dowText":"금","t":"14:30","cast":{"lempicka":"박혜나","rafaela":"손승연","marinetti":"조형균","tadeusz":"김민철","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"}},{"id":"s117","date":"2026-06-19","dowText":"금","t":"19:30","cast":{"lempicka":"정선아","rafaela":"차지연","marinetti":"김호영","tadeusz":"김민철","suzy":"김혜미","baroness":"윤사봉","baron":"김민수"},"finaleRoles":["lempicka","rafaela","marinetti","tadeusz"]},{"id":"s118","date":"2026-06-20","dowText":"토","t":"14:00","cast":{"lempicka":"박혜나","rafaela":"린아","marinetti":"조형균","tadeusz":"김우형","suzy":"김혜미","baroness":"김현숙","baron":"김민수"},"finaleRoles":["lempicka","rafaela","suzy","baroness","baron"]},{"id":"s119","date":"2026-06-20","dowText":"토","t":"19:00","cast":{"lempicka":"김선영","rafaela":"손승연","marinetti":"조형균","tadeusz":"김우형","suzy":"최정원","baroness":"윤사봉","baron":"김남수"},"finaleRoles":["lempicka","rafaela","marinetti","tadeusz","suzy","baroness","baron"]}];
 
-// Initial priority list — flat order across all roles
-const INITIAL_PRIORITY = [
-  { roleId: 'L', actor: '정선아' },
-  { roleId: 'R', actor: '차지연' },
-  { roleId: 'M', actor: '조형균' },
-  { roleId: 'T', actor: '김민철' },
-  { roleId: 'L', actor: '김선영' },
-  { roleId: 'R', actor: '린아' },
-  { roleId: 'M', actor: '김호영' },
-  { roleId: 'T', actor: '김우형' },
-  { roleId: 'L', actor: '박혜나' },
-  { roleId: 'R', actor: '손승연' },
-];
+const SHOW_DURATION_MINUTES = 180;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const KOREAN_DOW = ['일','월','화','수','목','금','토'];
+const root = document.getElementById('root');
 
-const FALLBACK_SHOWS = [
-  { id: 's1',  d: '5/1',  dow: '목', t: '19:30' },
-  { id: 's2',  d: '5/2',  dow: '금', t: '14:00' },
-  { id: 's3',  d: '5/2',  dow: '금', t: '19:30' },
-  { id: 's4',  d: '5/3',  dow: '토', t: '14:00' },
-  { id: 's5',  d: '5/3',  dow: '일', t: '19:00' },
-  { id: 's6',  d: '5/4',  dow: '일', t: '14:00' },
-  { id: 's7',  d: '5/4',  dow: '일', t: '19:00' },
-  { id: 's8',  d: '5/6',  dow: '화', t: '19:30' },
-  { id: 's9',  d: '5/7',  dow: '수', t: '14:30' },
-  { id: 's10', d: '5/8',  dow: '목', t: '19:30' },
-  { id: 's11', d: '5/9',  dow: '금', t: '19:30' },
-  { id: 's12', d: '5/10', dow: '토', t: '14:00' },
-];
-
-// Per-actor availability — list of show ids they can do
-const FALLBACK_AVAIL = {
-  '정선아': ['s1','s2','s5','s7','s10','s12'],
-  '김선영': ['s2','s3','s8','s9','s11'],
-  '박혜나': ['s4','s6','s7','s11'],
-  '차지연': ['s1','s3','s5','s8','s10','s12'],
-  '린아':   ['s2','s4','s6','s9','s11'],
-  '손승연': ['s5','s7','s12'],
-  '조형균': ['s1','s4','s5','s10','s11'],
-  '김호영': ['s2','s3','s6','s8','s9','s12'],
-  '김민철': ['s1','s3','s5','s7','s10'],
-  '김우형': ['s2','s4','s6','s8','s11','s12'],
+let priorityUid = 0;
+const state = {
+  priority: withPriorityIds(INITIAL_PRIORITY),
+  filters: { weekendOnly:false, matineeOnly:false, rankedOnly:false, hideNoSlots:true, finaleOnly:false },
+  sort: 'score',
+  selectedComboId: null,
+  focusShowId: null,
+  expandedShowId: null,
+  dateRange: { start: toInputDateValue(new Date()), end: toInputDateValue(addLocalDays(new Date(), 7)) },
+  dateMin: toInputDateValue(new Date()),
+  lastPrioritySignature: '',
+  dragIndex: null,
 };
 
-// ---------- Derived ----------
-function buildCombos(priority, shows, avail) {
-  // group by role
-  const byRole = {L:[], R:[], M:[], T:[]};
-  priority.forEach((p, idx) => {
-    byRole[p.roleId].push({ ...p, rank: byRole[p.roleId].length + 1, globalIdx: idx });
-  });
-  // role-internal points: actor's role rank → role.length - rank + 1
-  const points = {};
-  Object.entries(byRole).forEach(([rid, list]) => {
-    list.forEach(p => { points[p.actor] = list.length - p.rank + 1; });
-  });
-
-  const combos = [];
-  for (const l of byRole.L) for (const r of byRole.R) for (const m of byRole.M) for (const t of byRole.T) {
-    const cast = [l, r, m, t];
-    const score = cast.reduce((s, c) => s + points[c.actor], 0);
-    // available shows = intersection
-    const slotIds = shows
-      .filter(s => cast.every(c => (avail[c.actor] || []).includes(s.id)))
-      .map(s => s.id);
-    combos.push({
-      id: cast.map(c => c.actor).join('|'),
-      cast: cast.map(c => ({ actor: c.actor, roleId: c.roleId, rank: c.rank })),
-      score,
-      slots: slotIds,
-    });
-  }
-  combos.sort((a,b) => b.score - a.score || a.slots.length - b.slots.length);
-  combos.forEach((c, i) => c.rank = i + 1);
-  return { combos, points };
+function makePriorityEntry(roleId='', actor='') {
+  priorityUid += 1;
+  return { id:`p-${Date.now()}-${priorityUid}`, roleId, actor };
 }
-
-
-function parseKoreanDateLabel(label, now = new Date()) {
-  const m = label.match(/(\d+)월\s*(\d+)일/);
-  if (!m) return null;
-  const [, month, day] = m.map(Number);
-  return new Date(now.getFullYear(), month - 1, day, 0, 0, 0, 0);
+function withPriorityIds(list) {
+  return list.map((p, i) => ({ ...p, id:p.id || `seed-${i}-${p.roleId}-${p.actor}` }));
 }
-function parseShowDateTime(show, now = new Date()) {
-  const d = parseKoreanDateLabel(show.rawDate || show.d, now);
-  if (!d) return null;
-  const [hh = 0, mm = 0] = (show.t || '00:00').split(':').map(Number);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hh, mm, 0, 0);
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 }
-function toShortDate(label) {
-  const d = parseKoreanDateLabel(label);
-  if (!d) return label;
-  return `${d.getMonth()+1}/${d.getDate()}`;
+function roleActorKey(roleId, actor) { return `${roleId}::${actor}`; }
+function comboKeyFromCast(cast) { return ROLE_IDS.map(rid => cast[rid] || '').join('|'); }
+function parseLocalDateTime(dateISO, timeText='00:00') {
+  const [y, m, d] = dateISO.split('-').map(Number);
+  const [hh = 0, mm = 0] = timeText.split(':').map(Number);
+  return new Date(y, m - 1, d, hh, mm, 0, 0);
 }
-// ---------- UI atoms ----------
-function RoleDot({roleId, size=8}) {
-  const r = ROLE[roleId];
-  return <span style={{
-    display:'inline-block', width:size, height:size, borderRadius:99,
-    background: r.color, flexShrink: 0
-  }}/>;
+function startOfLocalDay(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+function addLocalDays(date, days) { const next = new Date(date); next.setDate(next.getDate() + days); return next; }
+function toInputDateValue(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
-
-function RoleBadge({roleId}) {
-  const r = ROLE[roleId];
-  return <span style={{
-    display:'inline-flex', alignItems:'center', gap:4,
-    fontSize:10, fontWeight:600, color: r.color,
-    padding:'1px 5px', border:`1px solid ${r.color}33`, borderRadius:3,
-    background: `${r.color}10`,
-    letterSpacing: 0.2,
-  }}>{r.name}</span>;
+function formatShortDate(date) { return `${date.getMonth() + 1}/${date.getDate()}`; }
+function formatFullDate(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`;
 }
-
-function CastInline({cast, fontSize=13, weight=400}) {
-  return (
-    <span style={{display:'inline-flex', alignItems:'center', gap:6, flexWrap:'wrap', fontSize, fontWeight: weight}}>
-      {cast.map((c,i) => (
-        <React.Fragment key={i}>
-          <span style={{display:'inline-flex', alignItems:'center', gap:5}}>
-            <RoleDot roleId={c.roleId} />
-            <span>{c.actor}</span>
-          </span>
-          {i < cast.length-1 && <span style={{color:'var(--ink-4)'}}>×</span>}
-        </React.Fragment>
-      ))}
-    </span>
-  );
+function formatClock(date) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
-
-// ---------- Priority list (drag to reorder, full list) ----------
-function PriorityList({priority, setPriority, points}) {
-  const [dragId, setDragId] = useState(null);
-  const [overIdx, setOverIdx] = useState(null);
-
-  const move = (from, to) => {
-    if (from === to || from < 0 || to < 0) return;
-    setPriority(prev => {
-      const arr = [...prev];
-      const [item] = arr.splice(from, 1);
-      arr.splice(to, 0, item);
-      return arr;
-    });
-  };
-
-  const onDragStart = (e, idx) => {
-    setDragId(idx);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-  const onDragOver = (e, idx) => {
-    e.preventDefault();
-    setOverIdx(idx);
-  };
-  const onDrop = (e, idx) => {
-    e.preventDefault();
-    if (dragId !== null) move(dragId, idx);
-    setDragId(null); setOverIdx(null);
-  };
-  const onDragEnd = () => { setDragId(null); setOverIdx(null); };
-
-  return (
-    <div style={{display:'flex', flexDirection:'column', gap:3}}>
-      {priority.map((p, i) => {
-        const role = ROLE[p.roleId];
-        const isDragging = dragId === i;
-        const isOver = overIdx === i && dragId !== null && dragId !== i;
-        return (
-          <div
-            key={`${p.roleId}-${p.actor}`}
-            draggable
-            onDragStart={(e) => onDragStart(e, i)}
-            onDragOver={(e) => onDragOver(e, i)}
-            onDrop={(e) => onDrop(e, i)}
-            onDragEnd={onDragEnd}
-            style={{
-              display:'grid',
-              gridTemplateColumns: '20px 22px 1fr auto',
-              alignItems:'center', gap:8,
-              padding:'7px 9px',
-              background: isOver ? 'var(--accent-softer)' : 'var(--surface)',
-              border: '1px solid ' + (isOver ? 'var(--accent)' : 'var(--line)'),
-              borderRadius: 6,
-              cursor: 'grab',
-              opacity: isDragging ? 0.4 : 1,
-              transition: 'background 80ms, border-color 80ms',
-            }}
-          >
-            <span className="mono" style={{
-              fontSize: 11, color:'var(--ink-3)', textAlign:'center', userSelect:'none'
-            }}>{i+1}</span>
-            <span style={{display:'flex', alignItems:'center'}}>
-              <RoleDot roleId={p.roleId} size={9} />
-            </span>
-            <span style={{display:'flex', alignItems:'baseline', gap:8, minWidth:0}}>
-              <span style={{
-                fontSize: 10, color: role.color, fontWeight:600,
-                letterSpacing: 0.2, flexShrink: 0
-              }}>{role.name}</span>
-              <span style={{fontSize: 13, fontWeight: 500, color:'var(--ink)'}}>{p.actor}</span>
-            </span>
-            <span className="mono" style={{
-              fontSize: 11, color:'var(--ink-3)', userSelect:'none'
-            }}>+{points[p.actor]}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
+function formatPreferenceValue(value) {
+  if (!Number.isFinite(value)) return '0';
+  return value.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
 }
-
-// ---------- Combo row (compact) ----------
-function ComboRow({combo, selected, onSelect, focusShowId}) {
-  const focusable = focusShowId && combo.slots.includes(focusShowId);
-  return (
-    <button
-      onClick={() => onSelect(combo.id)}
-      style={{
-        display:'grid',
-        gridTemplateColumns: '32px minmax(0,1fr) 60px 70px',
-        alignItems:'center', gap: 12,
-        padding: '10px 12px',
-        background: selected ? 'var(--accent-softer)' : 'transparent',
-        border: '1px solid ' + (selected ? 'var(--accent)' : 'transparent'),
-        borderRadius: 6,
-        textAlign:'left',
-        width:'100%',
-        cursor:'pointer',
-        transition: 'background 80ms, border-color 80ms',
-      }}
-      onMouseOver={(e) => { if (!selected) e.currentTarget.style.background = 'var(--surface-2)'; }}
-      onMouseOut={(e) => { if (!selected) e.currentTarget.style.background = 'transparent'; }}
-    >
-      <span style={{
-        display:'inline-flex', alignItems:'center', justifyContent:'center',
-        width: 24, height: 24, borderRadius: 99,
-        background: combo.rank <= 3 ? 'var(--accent)' : 'var(--surface)',
-        color: combo.rank <= 3 ? '#fff' : 'var(--ink-2)',
-        border: combo.rank <= 3 ? 'none' : '1px solid var(--line)',
-        fontSize: 11, fontWeight: 600,
-      }} className="mono">{combo.rank}</span>
-      <CastInline cast={combo.cast} fontSize={13} />
-      <span className="mono tnum" style={{
-        fontSize: 16, fontWeight: 600, color:'var(--ink)', textAlign:'right'
-      }}>{combo.score}</span>
-      <span className="mono tnum" style={{
-        fontSize: 12, color: combo.slots.length === 0 ? 'var(--ink-4)' : 'var(--ink-2)',
-        textAlign:'right'
-      }}>
-        {combo.slots.length}회
-        {focusable && <span style={{color:'var(--warn)', marginLeft:4}}>●</span>}
-      </span>
-    </button>
-  );
-}
-
-// ---------- Heatmap ----------
-function Heatmap({combos, shows, selectedId, focusShowId, setFocusShowId, setSelectedId}) {
-  const COL_W = 60;
-  const ROW_H = 32;
-  const LABEL_W = 280;
-  const SCORE_W = 50;
-
-  return (
-    <div style={{overflowX:'auto'}}>
-      <div style={{minWidth: LABEL_W + SCORE_W + COL_W * shows.length + 24}}>
-        {/* Column headers */}
-        <div style={{
-          display:'grid',
-          gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${shows.length}, ${COL_W}px)`,
-          gap: 0, marginBottom: 6, alignItems:'end',
-          paddingBottom: 8, borderBottom: '1px solid var(--line)',
-        }}>
-          <div style={{fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, paddingLeft: 4}}>조합</div>
-          <div style={{fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, textAlign: 'right', paddingRight: 8}}>선호도</div>
-          {shows.map(s => {
-            const isFocus = focusShowId === s.id;
-            return (
-              <button
-                key={s.id}
-                onClick={() => setFocusShowId(isFocus ? null : s.id)}
-                style={{
-                  textAlign: 'center', padding: '4px 2px',
-                  background: isFocus ? 'var(--warn-soft)' : 'transparent',
-                  borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid ' + (isFocus ? 'var(--warn)' : 'transparent'),
-                }}
-              >
-                <div className="mono" style={{fontSize: 11, fontWeight: 600, color: isFocus ? 'var(--warn)' : 'var(--ink)'}}>{s.d}</div>
-                <div style={{fontSize: 10, color: isFocus ? 'var(--warn)' : 'var(--ink-3)'}}>{s.dow}</div>
-                <div className="mono" style={{fontSize: 10, color: isFocus ? 'var(--warn)' : 'var(--ink-2)'}}>{s.t}</div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Rows */}
-        {combos.map(c => {
-          const isSel = selectedId === c.id;
-          return (
-            <div
-              key={c.id}
-              onClick={() => setSelectedId(c.id)}
-              style={{
-                display:'grid',
-                gridTemplateColumns: `${LABEL_W}px ${SCORE_W}px repeat(${shows.length}, ${COL_W}px)`,
-                alignItems:'center',
-                height: ROW_H,
-                background: isSel ? 'var(--accent-softer)' : 'transparent',
-                borderRadius: 4,
-                cursor:'pointer',
-              }}
-            >
-              <div style={{display:'flex', alignItems:'center', gap:8, paddingLeft: 4, minWidth:0}}>
-                <span style={{
-                  display:'inline-flex', alignItems:'center', justifyContent:'center',
-                  width: 18, height: 18, borderRadius: 99,
-                  background: c.rank <= 3 ? 'var(--accent)' : 'var(--surface-2)',
-                  color: c.rank <= 3 ? '#fff' : 'var(--ink-3)',
-                  border: c.rank <= 3 ? 'none' : '1px solid var(--line)',
-                  fontSize: 10, fontWeight: 600, flexShrink:0,
-                }} className="mono">{c.rank}</span>
-                <span style={{display:'flex', alignItems:'center', gap:4, fontSize: 12, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                  {c.cast.map((m, i) => (
-                    <React.Fragment key={i}>
-                      <RoleDot roleId={m.roleId} size={6} />
-                      <span style={{fontWeight: isSel ? 500 : 400}}>{m.actor}</span>
-                      {i < c.cast.length-1 && <span style={{color:'var(--ink-4)', margin:'0 2px'}}>·</span>}
-                    </React.Fragment>
-                  ))}
-                </span>
-              </div>
-              <div className="mono tnum" style={{fontSize: 13, fontWeight: 600, textAlign: 'right', paddingRight: 8}}>{c.score}</div>
-              {shows.map(s => {
-                const has = c.slots.includes(s.id);
-                const isCellFocus = focusShowId === s.id;
-                let bg = 'transparent';
-                if (has && isSel) bg = 'var(--accent)';
-                else if (has) bg = 'var(--accent-soft)';
-
-                return (
-                  <div key={s.id} style={{
-                    padding: 3,
-                    background: isCellFocus && !has ? 'rgba(201,95,68,0.05)' : 'transparent',
-                  }}>
-                    <div style={{
-                      width: '100%', height: ROW_H - 8,
-                      background: bg,
-                      border: isCellFocus && has ? '1.5px solid var(--warn)' : has ? '1px solid transparent' : '1px dashed var(--line)',
-                      borderRadius: 3,
-                    }}/>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ---------- Selection detail bar ----------
-function DetailBar({combo, shows, focusShowId}) {
-  if (!combo) return null;
-  const slots = combo.slots.map(id => shows.find(s => s.id === id));
-  return (
-    <div className="surface" style={{
-      padding: '14px 18px',
-      display:'grid', gridTemplateColumns: '1fr auto auto', gap: 24, alignItems:'center'
-    }}>
-      <div style={{minWidth:0}}>
-        <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>선택 조합</div>
-        <CastInline cast={combo.cast} fontSize={16} weight={500} />
-      </div>
-      <div style={{display:'flex', gap: 18, alignItems:'baseline'}}>
-        <div>
-          <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>가능 회차</div>
-          <div style={{display:'flex', flexWrap:'wrap', gap: 4, maxWidth: 360}}>
-            {slots.map(s => (
-              <span key={s.id} className="mono tnum" style={{
-                fontSize: 11, padding: '2px 6px', borderRadius: 3,
-                background: focusShowId === s.id ? 'var(--warn-soft)' : 'var(--surface-2)',
-                color: focusShowId === s.id ? 'var(--warn)' : 'var(--ink-2)',
-                border: '1px solid ' + (focusShowId === s.id ? 'var(--warn)' : 'var(--line)'),
-                fontWeight: 500,
-              }}>
-                {s.d} {s.dow} {s.t}
-              </span>
-            ))}
-            {slots.length === 0 && <span style={{fontSize: 12, color:'var(--ink-3)'}}>가능한 회차 없음</span>}
-          </div>
-        </div>
-      </div>
-      <div style={{textAlign:'right'}}>
-        <div style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5, marginBottom: 2}}>선호도</div>
-        <div className="mono tnum" style={{fontSize: 28, fontWeight: 600, color:'var(--accent)', lineHeight: 1}}>{combo.score}</div>
-      </div>
-    </div>
-  );
-}
-
-// ---------- Filters ----------
-function FilterBar({filters, setFilters}) {
-  const items = [
-    { key: 'weekendOnly', label: '주말만' },
-    { key: 'matineeOnly', label: '낮공만' },
-    { key: 'hideSeen', label: '본 조합 제외' },
-    { key: 'excludeSon', label: '손승연 제외' },
-  ];
-  return (
-    <div style={{display:'flex', gap: 6, flexWrap:'wrap'}}>
-      {items.map(it => {
-        const on = filters[it.key];
-        return (
-          <button
-            key={it.key}
-            onClick={() => setFilters(f => ({...f, [it.key]: !f[it.key]}))}
-            style={{
-              padding: '5px 10px',
-              fontSize: 12,
-              borderRadius: 99,
-              border: '1px solid ' + (on ? 'var(--accent)' : 'var(--line)'),
-              background: on ? 'var(--accent)' : 'var(--surface)',
-              color: on ? '#fff' : 'var(--ink-2)',
-              fontWeight: 500,
-              transition: 'all 80ms',
-            }}
-          >{it.label}</button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ---------- Header ----------
-function Header({comboCount, showCount, sort, setSort}) {
-  return (
-    <div style={{
-      display:'flex', justifyContent:'space-between', alignItems:'flex-end',
-      padding: '20px 24px 16px', borderBottom: '1px solid var(--line)',
-    }}>
-      <div>
-        <div style={{display:'flex', alignItems:'center', gap: 10, marginBottom: 4}}>
-          <div style={{width: 22, height: 22, borderRadius: 6, background:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize: 13, fontWeight: 600}}>♪</div>
-          <div style={{fontSize: 18, fontWeight: 600, letterSpacing: -0.2}}>배우 스케줄링</div>
-        </div>
-        <div style={{fontSize: 12, color:'var(--ink-3)'}}>
-          우선순위로 조합 선호도를 매기고, 시간 순으로 회차를 탐색
-        </div>
-      </div>
-      <div style={{display:'flex', gap: 16, alignItems:'center', fontSize: 12}}>
-        <Stat label="조합" value={comboCount} />
-        <Sep />
-        <Stat label="회차" value={showCount} />
-        <Sep />
-        <div style={{display:'flex', flexDirection:'column', gap:2}}>
-          <span style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5}}>정렬</span>
-          <div style={{display:'flex', gap: 2, padding: 2, background:'var(--surface-2)', border: '1px solid var(--line)', borderRadius: 6}}>
-            {[
-              {k:'score',    l:'선호도↓',   tip:'선호도 높은 순'},
-              {k:'slotsDesc',l:'회차↓',   tip:'가능 회차 많은 순'},
-              {k:'rare',     l:'희소성',  tip:'가능 회차 적은 순 (놓치기 쉬움)'},
-              {k:'earliest', l:'가까운순', tip:'가장 빠른 회차 기준'},
-            ].map(o => (
-              <button
-                key={o.k}
-                onClick={() => setSort(o.k)}
-                title={o.tip}
-                style={{
-                  padding: '3px 8px', fontSize: 11, fontWeight: 500,
-                  borderRadius: 4,
-                  background: sort === o.k ? 'var(--surface)' : 'transparent',
-                  border: '1px solid ' + (sort === o.k ? 'var(--line)' : 'transparent'),
-                  color: sort === o.k ? 'var(--ink)' : 'var(--ink-3)',
-                  boxShadow: sort === o.k ? 'var(--shadow-sm)' : 'none',
-                }}
-              >{o.l}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-const Stat = ({label, value}) => (
-  <div style={{display:'flex', flexDirection:'column', gap:2}}>
-    <span style={{fontSize: 10, color:'var(--ink-3)', textTransform:'uppercase', letterSpacing: 0.5}}>{label}</span>
-    <span className="mono tnum" style={{fontSize: 16, fontWeight: 600}}>{value}</span>
-  </div>
-);
-const Sep = () => <div style={{width:1, height:24, background:'var(--line)'}}/>;
-
-// ---------- Legend ----------
-function Legend() {
-  const items = [
-    { sw: <div style={{width:12, height:12, border:'1px dashed var(--line-2)', borderRadius:2}}/>, l: '없음' },
-    { sw: <div style={{width:12, height:12, background:'var(--accent-soft)', borderRadius:2}}/>, l: '출연 가능' },
-    { sw: <div style={{width:12, height:12, background:'var(--accent)', borderRadius:2}}/>, l: '선택 조합' },
-    { sw: <div style={{width:12, height:12, border:'1.5px solid var(--warn)', background:'#fff', borderRadius:2}}/>, l: '포커스 회차' },
-  ];
-  return (
-    <div style={{display:'flex', gap: 14, alignItems:'center', flexWrap:'wrap'}}>
-      {items.map((it, i) => (
-        <div key={i} style={{display:'flex', alignItems:'center', gap: 6, fontSize: 11, color:'var(--ink-2)'}}>
-          {it.sw}<span>{it.l}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ---------- Role legend ----------
-function RoleLegend() {
-  return (
-    <div style={{display:'flex', gap: 12, flexWrap:'wrap'}}>
-      {ROLE_LIST.map(r => (
-        <span key={r.id} style={{display:'inline-flex', alignItems:'center', gap:5, fontSize: 11, color:'var(--ink-2)'}}>
-          <RoleDot roleId={r.id} size={8} />{r.name}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-// ---------- App ----------
-function App() {
-  const [priority, setPriority] = useState(INITIAL_PRIORITY);
-  const [shows, setShows] = useState(FALLBACK_SHOWS);
-  const [avail, setAvail] = useState(FALLBACK_AVAIL);
-  const [filters, setFilters] = useState({weekendOnly:false, matineeOnly:false, hideSeen:false, excludeSon:false});
-  const [sort, setSort] = useState('score');
-  const [selectedId, setSelectedId] = useState(null);
-  const [focusShowId, setFocusShowId] = useState('s5'); // 5/3 일 19:00
-
-  useEffect(() => {
-    const loadCsv = async () => {
-      try {
-        const res = await fetch('./2026%EC%83%81%EB%B0%98%EA%B8%B0%EA%B3%B5%EC%97%B0%EC%9D%BC%EC%A0%95%20-%20%EB%A0%98%ED%94%BC%EC%B9%B4.csv');
-        const txt = await res.text();
-        const rows = txt.trim().split('\n').map(line => line.split(','));
-        const header = rows[0] || [];
-        const idx = {
-          date: header.indexOf('날짜'),
-          dow: header.indexOf('요일'),
-          time: header.indexOf('시간'),
-          L: header.indexOf('렘피카'),
-          R: header.indexOf('라파엘라'),
-          M: header.indexOf('마리네티'),
-          T: header.indexOf('타데우스'),
-        };
-        const dataRows = rows.slice(1).filter(r => r.length >= 7);
-        const nextShows = dataRows.map((r, i) => ({
-          id: `c${i+1}`,
-          rawDate: r[idx.date],
-          d: toShortDate(r[idx.date]),
-          dow: r[idx.dow],
-          t: r[idx.time],
-        }));
-        const nextAvail = {};
-        dataRows.forEach((r, i) => {
-          const sid = `c${i+1}`;
-          ['L','R','M','T'].forEach(key => {
-            const actor = r[idx[key]];
-            if (!actor) return;
-            if (!nextAvail[actor]) nextAvail[actor] = [];
-            nextAvail[actor].push(sid);
-          });
-        });
-        setShows(nextShows);
-        setAvail(nextAvail);
-      } catch (e) {
-        console.warn('CSV load failed. Using fallback data.', e);
-      }
+function annotateShows(now = new Date()) {
+  const today = startOfLocalDay(now);
+  return RAW_SHOWS.map(s => {
+    const dateTime = parseLocalDateTime(s.date, s.t);
+    const endDateTime = new Date(dateTime.getTime() + SHOW_DURATION_MINUTES * 60 * 1000);
+    const showDay = startOfLocalDay(dateTime);
+    const daysFromToday = Math.round((showDay - today) / DAY_MS);
+    const day = dateTime.getDay();
+    const isCurrent = now >= dateTime && now < endDateTime;
+    const isPastShow = now >= endDateTime;
+    const finaleRoles = Array.isArray(s.finaleRoles) ? s.finaleRoles : [];
+    return {
+      ...s,
+      dateTime,
+      endDateTime,
+      d: formatShortDate(dateTime),
+      dow: KOREAN_DOW[day],
+      daysFromToday,
+      isCurrent,
+      isPastShow,
+      isToday: daysFromToday === 0,
+      isActiveDate: !isPastShow,
+      isWeekend: day === 0 || day === 6,
+      isMatinee: dateTime.getHours() < 17,
+      finaleRoles,
+      isFinale: finaleRoles.length > 0,
+      comboKey: comboKeyFromCast(s.cast),
     };
-    loadCsv();
-  }, []);
-
-  const { combos, points } = useMemo(() => buildCombos(priority, shows, avail), [priority, shows, avail]);
-
-  // Apply filters
-  const visibleCombos = useMemo(() => {
-    let cs = combos;
-    if (filters.excludeSon) cs = cs.filter(c => !c.cast.some(m => m.actor === '손승연'));
-    if (sort === 'slotsDesc') {
-      cs = [...cs].sort((a,b) => b.slots.length - a.slots.length || b.score - a.score);
-    } else if (sort === 'rare') {
-      // 희소성: 가능 회차가 적을수록 위 (단 0회는 맨 아래)
-      cs = [...cs].sort((a,b) => {
-        if (a.slots.length === 0 && b.slots.length !== 0) return 1;
-        if (b.slots.length === 0 && a.slots.length !== 0) return -1;
-        return a.slots.length - b.slots.length || b.score - a.score;
-      });
-    } else if (sort === 'earliest') {
-      // 가까운순: 사용자가 보는 '오늘' 기준으로 가장 빠른 가능 회차 정렬
-      const now = new Date();
-      const nowTime = now.getTime();
-      const showMap = Object.fromEntries(shows.map(s => [s.id, s]));
-      const nearestFromToday = (combo) => {
-        const futureDates = combo.slots
-          .map(id => showMap[id])
-          .filter(Boolean)
-          .map(show => parseShowDateTime(show, now))
-          .filter(date => date && date.getTime() >= nowTime)
-          .sort((a,b) => a - b);
-        return futureDates.length ? futureDates[0].getTime() : Number.POSITIVE_INFINITY;
-      };
-
-      cs = [...cs].sort((a,b) => {
-        const at = nearestFromToday(a);
-        const bt = nearestFromToday(b);
-        return at - bt || b.score - a.score;
-      });
+  }).sort((a, b) => a.dateTime - b.dateTime || a.id.localeCompare(b.id));
+}
+function buildComboTemplatesFromShows(shows) {
+  const map = new Map();
+  shows.forEach(s => {
+    const id = comboKeyFromCast(s.cast);
+    if (!map.has(id)) {
+      const cast = ROLE_IDS.map(roleId => ({ roleId, actor:s.cast[roleId] }));
+      map.set(id, { id, castObj:{...s.cast}, cast });
     }
-    return cs;
-  }, [combos, filters, sort, shows]);
+  });
+  return [...map.values()];
+}
+const ALL_COMBO_TEMPLATES = buildComboTemplatesFromShows(RAW_SHOWS);
 
-  // Auto-select top combo when none chosen / when combo set changes
-  useEffect(() => {
-    if (!selectedId || !visibleCombos.find(c => c.id === selectedId)) {
-      if (visibleCombos[0]) setSelectedId(visibleCombos[0].id);
-    }
-  }, [visibleCombos, selectedId]);
+function validPriorityPairs(priority = state.priority) {
+  const seen = new Set();
+  const out = [];
+  priority.forEach((p, i) => {
+    if (!p.roleId || !p.actor) return;
+    if (!ROLE_ACTORS[p.roleId]?.includes(p.actor)) return;
+    const key = roleActorKey(p.roleId, p.actor);
+    if (seen.has(key)) return;
+    seen.add(key);
+    if (i < ROLE_IDS.length) out.push({ ...p, key, rank:i + 1 });
+  });
+  return out;
+}
+function buildPreferencePoints(priority) {
+  const n = ROLE_IDS.length;
+  const points = {};
+  const seen = new Set();
+  priority.forEach((p, i) => {
+    if (!p.roleId || !p.actor) return;
+    if (!ROLE_ACTORS[p.roleId]?.includes(p.actor)) return;
+    const key = roleActorKey(p.roleId, p.actor);
+    if (seen.has(key)) return;
+    seen.add(key);
+    const rank = i + 1;
+    points[key] = rank <= n ? Math.max(0, (n - rank + 1) / n) : 0;
+  });
+  return points;
+}
+function buildCombos(priority, activeShows, displayShows = activeShows) {
+  const points = buildPreferencePoints(priority);
+  const activeSlotsByCombo = new Map();
+  activeShows.forEach(s => {
+    if (!activeSlotsByCombo.has(s.comboKey)) activeSlotsByCombo.set(s.comboKey, []);
+    activeSlotsByCombo.get(s.comboKey).push(s.id);
+  });
+  const displaySlotsByCombo = new Map();
+  displayShows.forEach(s => {
+    if (!displaySlotsByCombo.has(s.comboKey)) displaySlotsByCombo.set(s.comboKey, []);
+    displaySlotsByCombo.get(s.comboKey).push(s.id);
+  });
+  return ALL_COMBO_TEMPLATES.map(t => {
+    const score = t.cast.reduce((sum, c) => sum + (points[roleActorKey(c.roleId, c.actor)] || 0), 0);
+    const slots = activeSlotsByCombo.get(t.id) || [];
+    const displaySlots = displaySlotsByCombo.get(t.id) || [];
+    const pastSlots = displaySlots.filter(id => !slots.includes(id));
+    return { ...t, score, slots, displaySlots, pastSlots };
+  });
+}
+function makeEarliestComparator(shows) {
+  const showOrder = new Map(shows.map((s, i) => [s.id, i]));
+  const earliest = combo => combo.slots.length ? Math.min(...combo.slots.map(id => showOrder.get(id) ?? Number.POSITIVE_INFINITY)) : Number.POSITIVE_INFINITY;
+  return (a, b) => earliest(a) - earliest(b);
+}
+function compareComboRarity(a, b) {
+  const av = a.slots.length === 0 ? Number.POSITIVE_INFINITY : a.slots.length;
+  const bv = b.slots.length === 0 ? Number.POSITIVE_INFINITY : b.slots.length;
+  return av - bv;
+}
+function sortPriorityCombos(combos, shows) {
+  const byEarliest = makeEarliestComparator(shows);
+  return [...combos].sort((a, b) =>
+    b.score - a.score ||
+    compareComboRarity(a, b) ||
+    byEarliest(a, b) ||
+    a.id.localeCompare(b.id, 'ko')
+  ).map((c, i) => ({ ...c, rank:i + 1 }));
+}
+function sortVisibleCombos(combos, shows) {
+  const byEarliest = makeEarliestComparator(shows);
+  let sorted;
+  if (state.sort === 'rare') {
+    sorted = [...combos].sort((a,b) => compareComboRarity(a,b) || b.score - a.score || byEarliest(a,b) || a.rank - b.rank);
+  } else if (state.sort === 'earliest') {
+    sorted = [...combos].sort((a,b) => byEarliest(a,b) || b.score - a.score || compareComboRarity(a,b) || a.rank - b.rank);
+  } else {
+    sorted = [...combos].sort((a,b) => a.rank - b.rank);
+  }
+  return sorted;
+}
+function earliestDateAmongTopCombos(combos, shows, topCount = 3) {
+  const byId = new Map(shows.map(s => [s.id, s]));
+  let best = null;
+  combos.slice(0, topCount).forEach(combo => {
+    combo.slots.forEach(id => {
+      const show = byId.get(id);
+      if (!show) return;
+      if (!best || show.dateTime < best.dateTime) best = show;
+    });
+  });
+  return best ? best.date : null;
+}
+function applyShowFilters(shows, filters = state.filters) {
+  return shows.filter(s => {
+    if (filters.weekendOnly && !s.isWeekend) return false;
+    if (filters.matineeOnly && !s.isMatinee) return false;
+    if (filters.finaleOnly && !s.isFinale) return false;
+    return true;
+  });
+}
+function showMatchInfo(show, pairs = validPriorityPairs()) {
+  const details = pairs.map(p => {
+    const hit = show.cast[p.roleId] === p.actor;
+    return { ...p, hit };
+  });
+  return { count: details.filter(d => d.hit).length, total: details.length, details };
+}
+function buildDerived(now = new Date()) {
+  const shows = annotateShows(now);
+  const activeAllShows = shows.filter(s => s.isActiveDate);
+  const heatmapShows = applyShowFilters(shows.filter(s => {
+    if (state.dateRange.start && s.date < state.dateRange.start) return false;
+    if (state.dateRange.end && s.date > state.dateRange.end) return false;
+    return true;
+  }));
+  const heatmapActiveShows = heatmapShows.filter(s => s.isActiveDate);
+  const pairs = validPriorityPairs();
 
-  const selected = visibleCombos.find(c => c.id === selectedId);
-  const preferredCombos = useMemo(() => (
-    [...visibleCombos].sort((a,b) => b.score - a.score || a.slots.length - b.slots.length)
-  ), [visibleCombos]);
+  let combos = buildCombos(state.priority, heatmapActiveShows, heatmapShows);
+  if (state.filters.rankedOnly) combos = combos.filter(c => c.score > 0);
+  const priorityCombosRaw = sortPriorityCombos(combos, heatmapActiveShows);
+  const priorityCombosBase = state.filters.hideNoSlots ? priorityCombosRaw.filter(c => c.slots.length > 0) : priorityCombosRaw;
+  const priorityCombos = priorityCombosBase.map((c, i) => ({ ...c, rank:i + 1 }));
+  const rankMap = new Map(priorityCombos.map(c => [c.id, c.rank]));
+  const visibleCombos = sortVisibleCombos(priorityCombos, heatmapActiveShows);
 
-  return (
-    <div style={{
-      maxWidth: 1400, margin: '0 auto', padding: 20,
-      display:'flex', flexDirection:'column', gap: 16,
-    }}>
-      <div className="surface" style={{padding: 0, overflow:'hidden'}}>
-        <Header comboCount={visibleCombos.length} showCount={shows.length} sort={sort} setSort={setSort} />
+  const comboById = new Map(priorityCombosRaw.map(c => [c.id, c]));
+  const candidateShows = applyShowFilters(activeAllShows)
+    .map(show => {
+      const combo = comboById.get(show.comboKey) || null;
+      const match = showMatchInfo(show, pairs);
+      return { show, combo, match, rank:rankMap.get(show.comboKey) || null, score:combo ? combo.score : 0 };
+    })
+    .filter(item => !state.filters.rankedOnly || item.match.count > 0)
+    .sort((a, b) => a.show.dateTime - b.show.dateTime || b.match.count - a.match.count || (a.rank ?? 9999) - (b.rank ?? 9999));
 
-        <div style={{display:'grid', gridTemplateColumns: '300px 1fr', gap: 0}}>
-          {/* Left: priority */}
-          <div style={{padding: '18px 18px', borderRight: '1px solid var(--line)', background:'var(--surface-2)'}}>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 12}}>
-              <h3 style={{fontSize: 13, fontWeight: 600}}>우선순위</h3>
-              <span className="mono" style={{fontSize: 11, color:'var(--ink-3)'}}>{priority.length}명</span>
-            </div>
-            <div style={{fontSize: 11, color:'var(--ink-3)', marginBottom: 10}}>
-              한 줄로 줄세우기 — 드래그하여 순서 변경
-            </div>
-            <PriorityList priority={priority} setPriority={setPriority} points={points}/>
-            <div style={{marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line)'}}>
-              <div style={{fontSize: 11, color:'var(--ink-3)', marginBottom: 8}}>필터</div>
-              <FilterBar filters={filters} setFilters={setFilters}/>
-            </div>
-            <div style={{marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--line)'}}>
-              <RoleLegend/>
-            </div>
-          </div>
+  const selectedCombo = priorityCombosRaw.find(c => c.id === state.selectedComboId) || priorityCombos[0] || priorityCombosRaw[0] || null;
+  if (selectedCombo && !state.selectedComboId) state.selectedComboId = selectedCombo.id;
+  if (state.selectedComboId && !priorityCombosRaw.find(c => c.id === state.selectedComboId)) state.selectedComboId = selectedCombo ? selectedCombo.id : null;
 
-          {/* Right: combos + heatmap */}
-          <div style={{padding: '18px 22px', display:'flex', flexDirection:'column', gap: 22, minWidth: 0}}>
-            {/* Top combos panel */}
-            <section>
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom: 10}}>
-                <div>
-                  <h3 style={{fontSize: 13, fontWeight: 600, display:'inline'}}>우선순위 조합</h3>
-                  <span style={{fontSize: 11, color:'var(--ink-3)', marginLeft: 8}}>선호도순 · 전체 {preferredCombos.length}개</span>
-                </div>
-                <span style={{fontSize: 11, color:'var(--ink-3)'}}>선호도 = 역할별 우선순위 선호도 합</span>
-              </div>
-              <div style={{
-                display:'grid', gridTemplateColumns:'32px 1fr 60px 70px',
-                padding: '4px 12px', fontSize: 10, color:'var(--ink-3)',
-                textTransform:'uppercase', letterSpacing: 0.5, gap: 12,
-              }}>
-                <span>순위</span>
-                <span>조합</span>
-                <span style={{textAlign:'right'}}>선호도</span>
-                <span style={{textAlign:'right'}}>가능</span>
-              </div>
-              <div style={{display:'flex', flexDirection:'column', gap: 1, maxHeight: 216, overflowY:'auto', paddingRight: 4}}>
-                {preferredCombos.map(c => (
-                  <ComboRow key={c.id} combo={c} selected={selectedId === c.id} onSelect={setSelectedId} focusShowId={focusShowId}/>
-                ))}
-              </div>
-            </section>
-
-            {/* Heatmap */}
-            <section>
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 10}}>
-                <div>
-                  <h3 style={{fontSize: 13, fontWeight: 600, display:'inline'}}>조합 × 회차 히트맵</h3>
-                  <span style={{fontSize: 11, color:'var(--ink-3)', marginLeft: 8}}>회차 헤더를 누르면 포커스</span>
-                </div>
-                <Legend/>
-              </div>
-              <Heatmap shows={shows} combos={preferredCombos} selectedId={selectedId} focusShowId={focusShowId} setFocusShowId={setFocusShowId} setSelectedId={setSelectedId}/>
-            </section>
-          </div>
-        </div>
-      </div>
-
-      {/* Detail bar */}
-      <DetailBar combo={selected} shows={shows} focusShowId={focusShowId}/>
-    </div>
-  );
+  return { shows, activeAllShows, heatmapShows, heatmapActiveShows, pairs, priorityCombos, priorityCombosRaw, visibleCombos, rankMap, candidateShows, selectedCombo };
+}
+function syncDateRangeToPriority() {
+  const sig = state.priority.map(p => `${p.roleId}:${p.actor}`).join('|');
+  if (sig === state.lastPrioritySignature) return;
+  state.lastPrioritySignature = sig;
+  const shows = annotateShows(new Date());
+  const activeAllShows = shows.filter(s => s.isActiveDate);
+  let combos = buildCombos(state.priority, activeAllShows, activeAllShows).filter(c => c.slots.length > 0);
+  const sorted = sortPriorityCombos(combos, activeAllShows);
+  const today = toInputDateValue(new Date());
+  const autoStart = earliestDateAmongTopCombos(sorted, activeAllShows, 3) || today;
+  const min = autoStart < today ? today : autoStart;
+  state.dateMin = min;
+  state.dateRange.start = min;
+  state.dateRange.end = toInputDateValue(addLocalDays(parseLocalDateTime(min), 7));
+}
+function selectedDateForCombo(combo, shows) {
+  if (!combo) return null;
+  const byId = new Map(shows.map(s => [s.id, s]));
+  if (state.focusShowId && combo.displaySlots?.includes(state.focusShowId)) return byId.get(state.focusShowId) || null;
+  const firstActive = combo.slots.map(id => byId.get(id)).filter(Boolean).sort((a,b)=>a.dateTime-b.dateTime)[0];
+  return firstActive || combo.displaySlots.map(id => byId.get(id)).filter(Boolean).sort((a,b)=>a.dateTime-b.dateTime)[0] || null;
+}
+function findRecommendationCards(candidateShows, pairs) {
+  const total = pairs.length;
+  if (total === 0) return { full:null, alternative:candidateShows[0] || null };
+  const full = candidateShows.find(item => item.match.count === total) || null;
+  const alternatives = candidateShows.filter(item => item.match.count > 0 && item.match.count < total);
+  alternatives.sort((a,b) => b.match.count - a.match.count || a.show.dateTime - b.show.dateTime || (a.rank ?? 9999) - (b.rank ?? 9999));
+  const alternative = alternatives[0] || candidateShows.find(item => item !== full) || null;
+  return { full, alternative };
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+function castLinesHtml(cast, highlighted = new Set(), firstLineCount = 4, fontSize = 13) {
+  const lines = [cast.slice(0, firstLineCount), cast.slice(firstLineCount)].filter(line => line.length);
+  return `<span class="cast-lines" style="font-size:${fontSize}px">${lines.map(line =>
+    `<span class="cast-line">${line.map((c, i) => {
+      const role = ROLE[c.roleId] || {};
+      const key = roleActorKey(c.roleId, c.actor);
+      const hi = highlighted.has(key);
+      return `${i ? '<span class="sep">·</span>' : ''}<span class="cast-actor ${hi ? 'is-highlight' : ''}" title="${escapeHtml(role.name || '')}" style="color:${escapeHtml(role.color || 'var(--ink)')}">${escapeHtml(c.actor)}${hi ? '<span class="star">⭐</span>' : ''}</span>`;
+    }).join('')}</span>`
+  ).join('')}</span>`;
+}
+function matchChipsHtml(match) {
+  if (!match.total) return '<span class="empty-note">우선순위에서 배우를 선택하면 출연 여부가 표시됩니다.</span>';
+  return `<div class="match-chips">${match.details.map(d => {
+    const role = ROLE[d.roleId] || {};
+    return `<span class="match-chip ${d.hit ? 'hit' : 'miss'}" style="--role-color:${escapeHtml(role.color || '#999')}"><span class="mark">${d.hit ? '●' : '○'}</span>${escapeHtml(d.actor)}</span>`;
+  }).join('')}</div>`;
+}
+function comboDateText(show) {
+  return show ? `${show.d} ${show.dow} ${show.t}` : '가능 회차 없음';
+}
+function renderRecommendationCard(title, item, tone='primary') {
+  if (!item) {
+    return `<div class="recommend-card ${tone}"><div class="card-label">${escapeHtml(title)}</div><div class="empty-note">조건에 맞는 회차가 없습니다.</div></div>`;
+  }
+  const rankText = item.rank ? `#${item.rank}` : '#—';
+  return `<button type="button" class="recommend-card ${tone}" data-action="select-show" data-show-id="${escapeHtml(item.show.id)}" data-combo-id="${escapeHtml(item.show.comboKey)}">
+    <div class="card-label">${escapeHtml(title)}</div>
+    <div class="card-main-row"><div class="card-date">${escapeHtml(comboDateText(item.show))}</div><div class="card-badge">${escapeHtml(rankText)} · ${item.match.count}/${item.match.total || 0}</div></div>
+    ${matchChipsHtml(item.match)}
+    <div class="card-sub">선호도 ${formatPreferenceValue(item.score)}</div>
+  </button>`;
+}
+function renderPriorityPanel() {
+  return `<aside class="priority-panel">
+    <div class="panel-head"><h3>우선순위</h3><span class="mono tnum">${state.priority.length}건</span></div>
+    <div class="hint">[역할:배우] 행을 추가하고 오른쪽 ▲▼ 버튼 또는 드래그로 순서 변경</div>
+    <div class="priority-list">
+      ${state.priority.map((p, i) => {
+        const role = ROLE[p.roleId];
+        const actors = p.roleId ? (ROLE_ACTORS[p.roleId] || []) : [];
+        const incomplete = !p.roleId || !p.actor;
+        return `<div class="priority-row ${incomplete ? 'is-incomplete' : ''}" draggable="true" data-index="${i}" data-id="${escapeHtml(p.id)}">
+          <span class="grip">⋮⋮</span>
+          <span class="row-num mono tnum">${i + 1}</span>
+          <select class="role-pick" data-action="change-role" data-id="${escapeHtml(p.id)}" style="color:${role ? role.color : 'var(--ink-3)'};border-color:${role ? role.color + '40' : 'var(--line)'};font-weight:${role ? 600 : 400}">
+            <option value="">역할…</option>${ROLE_LIST.map(r => `<option value="${escapeHtml(r.id)}" ${p.roleId === r.id ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+          </select>
+          <select class="actor-pick" data-action="change-actor" data-id="${escapeHtml(p.id)}" ${!p.roleId ? 'disabled' : ''}>
+            <option value="">배우…</option>${actors.map(a => `<option value="${escapeHtml(a)}" ${p.actor === a ? 'selected' : ''}>${escapeHtml(a)}</option>`).join('')}
+          </select>
+          <button type="button" class="delete-btn" data-action="remove-priority" data-id="${escapeHtml(p.id)}" title="삭제">×</button>
+          <div class="move-buttons">
+            <button type="button" data-action="move-priority" data-from="${i}" data-to="${i - 1}" ${i === 0 ? 'disabled' : ''} title="위로">▲</button>
+            <button type="button" data-action="move-priority" data-from="${i}" data-to="${i + 1}" ${i === state.priority.length - 1 ? 'disabled' : ''} title="아래로">▼</button>
+          </div>
+        </div>`;
+      }).join('')}
+      <button type="button" class="add-priority" data-action="add-priority"><span>+</span> 우선순위 추가</button>
+    </div>
+    <div class="formula-box"><strong>선호도 산식</strong> · 전체 배역 수를 <span class="mono">N</span>이라 할 때 1위 = <span class="mono">N/N</span>, 2위 = <span class="mono">(N-1)/N</span><br/>N순위 이후와 리스트에 없는 배우는 <span class="mono">0</span> 처리</div>
+    <div class="filter-block"><div class="filter-title">필터</div>${renderFilterBar()}</div>
+  </aside>`;
+}
+function renderFilterBar() {
+  const chips = [
+    ['weekendOnly','주말만'], ['matineeOnly','낮공만'], ['rankedOnly','순위 배우만'], ['hideNoSlots','회차 0인 조합 숨김'], ['finaleOnly','막공만']
+  ];
+  return `<div class="filter-chips">${chips.map(([key,label]) => `<button type="button" class="chip ${state.filters[key] ? 'is-on' : ''}" data-action="toggle-filter" data-key="${key}">${escapeHtml(label)}</button>`).join('')}</div>`;
+}
+function renderDateSortRow() {
+  const opts = [['score','선호도'], ['rare','희소성'], ['earliest','가까운순']];
+  return `<div class="date-sort-row">
+    <div class="date-range-control">
+      <span>날짜 필터</span>
+      <label>시작 <input type="date" data-action="date-start" value="${escapeHtml(state.dateRange.start)}" min="${escapeHtml(state.dateMin)}"></label>
+      <span class="dash">–</span>
+      <label>종료 <input type="date" data-action="date-end" value="${escapeHtml(state.dateRange.end)}" min="${escapeHtml(state.dateRange.start || state.dateMin)}"></label>
+    </div>
+    <div class="sort-control"><span>정렬</span><div class="seg">${opts.map(([k,l]) => `<button type="button" class="${state.sort === k ? 'active' : ''}" data-action="set-sort" data-sort="${k}">${escapeHtml(l)}</button>`).join('')}</div></div>
+  </div>`;
+}
+function showBadgesHtml(show) {
+  const badges = [];
+  if (show.isFinale) badges.push('막공');
+  if (show.isCurrent) badges.push('현재');
+  else if (show.isToday) badges.push('오늘');
+  return badges.map(label => `<em>${escapeHtml(label)}</em>`).join('');
+}
+function renderCandidateRow(item) {
+  const isExpanded = state.expandedShowId === item.show.id;
+  const rankText = item.rank ? `#${item.rank}` : '#—';
+  const cast = ROLE_IDS.map(roleId => ({ roleId, actor:item.show.cast[roleId] }));
+  return `<div class="candidate-row ${isExpanded ? 'is-expanded' : ''}" data-action="toggle-show" data-show-id="${escapeHtml(item.show.id)}" data-combo-id="${escapeHtml(item.show.comboKey)}">
+    <div class="candidate-date"><strong>${escapeHtml(item.show.d)}</strong><span>${escapeHtml(item.show.dow)} ${escapeHtml(item.show.t)}</span>${showBadgesHtml(item.show)}</div>
+    <div class="candidate-match">${matchChipsHtml(item.match)}</div>
+    <div class="candidate-score"><span class="match-count">${item.match.count}/${item.match.total || 0}</span><span class="combo-rank">${escapeHtml(rankText)}</span></div>
+    ${isExpanded ? `<div class="candidate-detail"><div><b>전체 캐스트</b> ${castLinesHtml(cast, new Set(), 4, 12.5)}</div><div>선호도 <span class="mono">${formatPreferenceValue(item.score)}</span></div></div>` : ''}
+  </div>`;
+}
+function renderRecommendations(d) {
+  const cards = findRecommendationCards(d.candidateShows, d.pairs);
+  const nextItems = d.candidateShows.filter(item => item.match.total === 0 || item.match.count > 0).slice(0, 24);
+  return `<section class="surface section-block rec-section">
+    <div class="section-head"><div><h3>일정 추천</h3><p>선택한 우선순위 배우가 언제 나오는지 날짜순으로 확인</p></div></div>
+    <div class="recommend-grid">
+      ${renderRecommendationCard('가장 가까운 완전 일치', cards.full, 'primary')}
+      ${renderRecommendationCard('가장 가까운 차선책', cards.alternative, 'secondary')}
+    </div>
+    <div class="subsection-head"><h4>다음 가능한 날짜</h4><span>${nextItems.length}개 표시</span></div>
+    <div class="candidate-list">${nextItems.length ? nextItems.map(renderCandidateRow).join('') : '<div class="empty-note padded">조건에 맞는 향후 회차가 없습니다.</div>'}</div>
+  </section>`;
+}
+function renderDetailBar(d) {
+  const combo = d.selectedCombo;
+  if (!combo) return '';
+  const highlighted = new Set(d.pairs.map(p => p.key));
+  const show = selectedDateForCombo(combo, d.heatmapShows);
+  return `<div class="selected-detail-bar surface">
+    <div class="selected-date"><div class="label">선택 조합 날짜</div><strong>${escapeHtml(comboDateText(show))}</strong>${show?.isCurrent ? '<span>현재 회차</span>' : ''}</div>
+    <div class="selected-cast"><div class="label">조합 #${combo.rank || '—'}</div>${castLinesHtml(combo.cast, highlighted, 4, 14)}</div>
+    <div class="selected-score"><div class="label">선호도</div><strong>${formatPreferenceValue(combo.score)}</strong></div>
+  </div>`;
+}
+function renderHeatmap(d) {
+  const highlighted = new Set(d.pairs.map(p => p.key));
+  const LABEL_W = 330;
+  const SCORE_W = 58;
+  const COL_W = 64;
+  const minW = LABEL_W + SCORE_W + COL_W * Math.max(d.heatmapShows.length, 1) + 28;
+  return `<section class="surface section-block heatmap-section">
+    <div class="section-head"><div><h3>조합 × 회차 상세 비교</h3><p>회차 헤더를 누르면 포커스. 날짜 헤더의 n/N은 우선순위 배우 출연 수.</p></div>${renderLegend()}</div>
+    ${renderDateSortRow()}
+    ${renderDetailBar(d)}
+    <div class="heatmap-x-scroll"><div class="heatmap-table" style="min-width:${minW}px">
+      <div class="heatmap-header" style="grid-template-columns:${LABEL_W}px ${SCORE_W}px repeat(${d.heatmapShows.length}, ${COL_W}px)">
+        <div>조합</div><div class="right">선호도</div>${d.heatmapShows.map(s => {
+          const isFocus = state.focusShowId === s.id;
+          const m = showMatchInfo(s, d.pairs);
+          const status = s.isCurrent ? '현재' : s.isPastShow ? '종료' : s.isToday ? '오늘' : '';
+          const flags = [s.isFinale ? '막공' : '', status].filter(Boolean);
+          return `<button type="button" class="show-head ${isFocus ? 'focus' : ''} ${s.isCurrent ? 'current' : ''} ${s.isPastShow ? 'past' : ''}" data-action="focus-show" data-show-id="${escapeHtml(s.id)}"><b>${escapeHtml(s.d)}</b><span>${escapeHtml(s.dow)} ${escapeHtml(s.t)}</span>${m.total ? `<em>${m.count}/${m.total}</em>` : ''}${flags.map(flag => `<small>${escapeHtml(flag)}</small>`).join('')}</button>`;
+        }).join('')}
+      </div>
+      <div class="heatmap-y-scroll">
+        ${d.visibleCombos.length ? d.visibleCombos.map(c => `<div class="heatmap-row ${state.selectedComboId === c.id ? 'selected' : ''}" style="grid-template-columns:${LABEL_W}px ${SCORE_W}px repeat(${d.heatmapShows.length}, ${COL_W}px)" data-action="select-combo" data-combo-id="${escapeHtml(c.id)}">
+          <div class="combo-label"><span class="rank-badge ${c.rank <= 3 ? 'top' : ''}">${c.rank}</span>${castLinesHtml(c.cast, highlighted, 4, 12.5)}</div>
+          <div class="pref-value">${formatPreferenceValue(c.score)}</div>
+          ${d.heatmapShows.map(s => {
+            const hasActive = c.slots.includes(s.id);
+            const hasPast = c.pastSlots?.includes(s.id);
+            const has = hasActive || hasPast;
+            return `<div class="hm-cell-wrap ${s.isCurrent ? 'current' : ''} ${state.focusShowId === s.id ? 'focus' : ''}"><div class="hm-cell ${hasActive ? 'on' : ''} ${hasActive && state.selectedComboId === c.id ? 'sel' : ''} ${hasPast ? 'past' : ''} ${has ? '' : 'off'}"></div></div>`;
+          }).join('')}
+        </div>`).join('') : '<div class="empty-note padded">현재 필터 조건에 맞는 조합이 없습니다.</div>'}
+      </div>
+    </div></div>
+  </section>`;
+}
+function renderLegend() {
+  const items = [['off','없음'], ['on','출연 가능'], ['sel','선택 조합'], ['focus','포커스 회차'], ['current','현재 회차'], ['past','종료 회차']];
+  return `<div class="legend">${items.map(([k,l]) => `<span><i class="lg ${k}"></i>${escapeHtml(l)}</span>`).join('')}</div>`;
+}
+function renderComboDictionary(d) {
+  const highlighted = new Set(d.pairs.map(p => p.key));
+  return `<section class="surface section-block combo-section">
+    <div class="section-head"><div><h3>우선순위 조합</h3><p>#번호 해설 · 선호도 &gt; 희소성 &gt; 가까운순 · 전체 ${d.priorityCombos.length}개</p></div></div>
+    <div class="combo-head"><span>순위</span><span>조합</span><span>선호도</span><span>가능</span></div>
+    <div class="priority-combo-scroll">${d.priorityCombos.map(c => `<button type="button" class="combo-row ${state.selectedComboId === c.id ? 'selected' : ''}" data-action="select-combo" data-combo-id="${escapeHtml(c.id)}">
+      <span class="rank-badge ${c.rank <= 3 ? 'top' : ''}">${c.rank}</span>
+      <span class="combo-cast">${castLinesHtml(c.cast, highlighted, 4, 13)}</span>
+      <span class="pref-value">${formatPreferenceValue(c.score)}</span>
+      <span class="slot-count">${c.slots.length}회</span>
+    </button>`).join('')}</div>
+  </section>`;
+}
+function renderHeader(d, now) {
+  const pastCount = d.shows.filter(s => s.isPastShow).length;
+  return `<header class="top-header">
+    <div><div class="brand"><span>♪</span><strong>배우 스케줄링</strong></div><p>우선순위 배우 기준으로 가장 가까운 추천 일정과 상세 조합을 확인</p></div>
+    <div class="top-stats"><div><span>조합</span><b>${d.priorityCombosRaw.length}</b></div><i></i><div><span>유효 회차</span><b>${d.activeAllShows.length}</b></div><i></i><div><span>종료 회차</span><b>${pastCount}</b></div><i></i><div><span>기준시각</span><b>${escapeHtml(formatFullDate(now))} ${escapeHtml(formatClock(now))}</b></div></div>
+  </header>`;
+}
+function render() {
+  syncDateRangeToPriority();
+  const now = new Date();
+  const d = buildDerived(now);
+  root.innerHTML = `<div class="app-shell">
+    <div class="app-card surface">
+      ${renderHeader(d, now)}
+      <div class="main-grid">
+        ${renderPriorityPanel()}
+        <main class="content-panel">
+          ${renderRecommendations(d)}
+          ${renderHeatmap(d)}
+          ${renderComboDictionary(d)}
+        </main>
+      </div>
+    </div>
+  </div>`;
+}
+function setStateThenRender(fn) { fn(); render(); }
+function movePriority(from, to) {
+  if (from === to || from < 0 || to < 0 || from >= state.priority.length || to >= state.priority.length) return;
+  const arr = state.priority;
+  const [item] = arr.splice(from, 1);
+  arr.splice(to, 0, item);
+  state.selectedComboId = null;
+}
+root.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+  if (action === 'toggle-filter') setStateThenRender(() => { state.filters[el.dataset.key] = !state.filters[el.dataset.key]; state.selectedComboId = null; });
+  else if (action === 'add-priority') setStateThenRender(() => state.priority.push(makePriorityEntry('', '')));
+  else if (action === 'remove-priority') setStateThenRender(() => { state.priority = state.priority.filter(p => p.id !== el.dataset.id); state.selectedComboId = null; });
+  else if (action === 'move-priority') setStateThenRender(() => movePriority(Number(el.dataset.from), Number(el.dataset.to)));
+  else if (action === 'set-sort') setStateThenRender(() => state.sort = el.dataset.sort);
+  else if (action === 'select-combo') setStateThenRender(() => state.selectedComboId = el.dataset.comboId);
+  else if (action === 'focus-show') setStateThenRender(() => state.focusShowId = state.focusShowId === el.dataset.showId ? null : el.dataset.showId);
+  else if (action === 'select-show') setStateThenRender(() => { state.focusShowId = el.dataset.showId; state.selectedComboId = el.dataset.comboId; state.expandedShowId = el.dataset.showId; });
+  else if (action === 'toggle-show') setStateThenRender(() => { state.focusShowId = el.dataset.showId; state.selectedComboId = el.dataset.comboId; state.expandedShowId = state.expandedShowId === el.dataset.showId ? null : el.dataset.showId; });
+});
+root.addEventListener('change', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+  if (action === 'change-role') setStateThenRender(() => {
+    const p = state.priority.find(x => x.id === el.dataset.id);
+    if (p) { p.roleId = el.value; p.actor = ''; }
+    state.selectedComboId = null;
+  });
+  else if (action === 'change-actor') setStateThenRender(() => {
+    const p = state.priority.find(x => x.id === el.dataset.id);
+    if (p) p.actor = el.value;
+    state.selectedComboId = null;
+  });
+  else if (action === 'date-start') setStateThenRender(() => {
+    const v = el.value && el.value < state.dateMin ? state.dateMin : el.value;
+    state.dateRange.start = v;
+    if (state.dateRange.end && v && state.dateRange.end < v) state.dateRange.end = toInputDateValue(addLocalDays(parseLocalDateTime(v), 7));
+    state.selectedComboId = null;
+  });
+  else if (action === 'date-end') setStateThenRender(() => {
+    state.dateRange.end = el.value;
+    if (state.dateRange.start && state.dateRange.end && state.dateRange.end < state.dateRange.start) state.dateRange.start = state.dateRange.end;
+    state.selectedComboId = null;
+  });
+});
+root.addEventListener('dragstart', e => {
+  const row = e.target.closest('.priority-row');
+  if (!row || e.target.closest('select,button')) { e.preventDefault(); return; }
+  state.dragIndex = Number(row.dataset.index);
+  e.dataTransfer.effectAllowed = 'move';
+});
+root.addEventListener('dragover', e => {
+  const row = e.target.closest('.priority-row');
+  if (!row) return;
+  e.preventDefault();
+});
+root.addEventListener('drop', e => {
+  const row = e.target.closest('.priority-row');
+  if (!row || state.dragIndex === null) return;
+  e.preventDefault();
+  setStateThenRender(() => { movePriority(state.dragIndex, Number(row.dataset.index)); state.dragIndex = null; });
+});
+root.addEventListener('dragend', () => { state.dragIndex = null; });
+setInterval(render, 60 * 1000);
+render();
+window.__CASTING_APP_TEST__ = { state, buildDerived, annotateShows, buildPreferencePoints, validPriorityPairs, sortPriorityCombos, showMatchInfo, ROLE_LIST, ROLE_ACTORS, RAW_SHOWS, ALL_COMBO_TEMPLATES };
 </script>
 </body>
 </html>
